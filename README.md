@@ -34,8 +34,8 @@ O jogo segue a lógica do Super Jogo da Velha:
 
 ## Tecnologias Utilizadas
 
-* **Haskell**: lógica funcional, imutabilidade, recursividade.
-* **Prolog**: lógica declarativa, inferência, backtracking.
+* **[Haskell](https://www.haskell.org/):** lógica funcional, imutabilidade, recursividade.
+* **[Prolog](https://www.swi-prolog.org/):** lógica declarativa, inferência, backtracking.
 * Interface baseada em terminal (sem uso de interfaces gráficas).
 
 ## Como Executar
@@ -59,11 +59,6 @@ Certifique-se de ter o GHC (para Haskell) e o SWI-Prolog instalados na sua máqu
 ## Aprendizados
 
 (COLOCAR)
-
-## Tecnologias Utilizadas
-
-- [Haskell](https://www.haskell.org/)
-- [Prolog](https://www.swi-prolog.org/)
 
 ## Equipe
 
