@@ -102,8 +102,11 @@
   (major1) == 2 && (major2) == 38 && (minor) <= 0)
 #endif /* MIN_TOOL_VERSION_strip */
 
+#ifndef CURRENT_PACKAGE_KEY
+#define CURRENT_PACKAGE_KEY "TTT-Tic-Tac-Toe-0.1.0.0-inplace"
+#endif /* CURRENT_packageKey */
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "TTT-Tic-Tac-Toe-0.1.0.0-inplace-TTT-Tic-Tac-Toe"
+#define CURRENT_COMPONENT_ID "TTT-Tic-Tac-Toe-0.1.0.0-inplace"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"

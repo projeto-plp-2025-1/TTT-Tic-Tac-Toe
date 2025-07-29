@@ -47,7 +47,7 @@ getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: 
 
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 bindir     = "/home/nicole/.cabal/bin"
-libdir     = "/home/nicole/.cabal/lib/x86_64-linux-ghc-9.6.7/TTT-Tic-Tac-Toe-0.1.0.0-inplace-TTT-Tic-Tac-Toe"
+libdir     = "/home/nicole/.cabal/lib/x86_64-linux-ghc-9.6.7/TTT-Tic-Tac-Toe-0.1.0.0-inplace"
 dynlibdir  = "/home/nicole/.cabal/lib/x86_64-linux-ghc-9.6.7"
 datadir    = "/home/nicole/.cabal/share/x86_64-linux-ghc-9.6.7/TTT-Tic-Tac-Toe-0.1.0.0"
 libexecdir = "/home/nicole/.cabal/libexec/x86_64-linux-ghc-9.6.7/TTT-Tic-Tac-Toe-0.1.0.0"
