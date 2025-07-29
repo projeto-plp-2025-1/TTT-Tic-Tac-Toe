@@ -1,8 +1,11 @@
 module Main where
 
-import qualified MyLib (someFunc)
+import Tabuleiro
 
 main :: IO ()
 main = do
-  putStrLn "Tic Tac Toe!"
-  MyLib.someFunc
+    let tabGrande = criarTabuleiroGrande
+    putStrLn "=== Tabuleiro Pequeno Cru ==="
+    putStrLn $ mostrarTabuleiroPequenoCrua (head (head tabGrande))
+    putStrLn "=== Tabuleiro Grande Cru ==="
+    putStrLn $ mostrarTabuleiroGrandeCrua tabGrande
