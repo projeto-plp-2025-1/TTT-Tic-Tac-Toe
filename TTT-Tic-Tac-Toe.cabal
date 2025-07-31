@@ -59,10 +59,13 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  Tabuleiro
-
+    exposed-modules:  Types
+                      Tabuleiro
+                      Menu
+                                          
     -- Modules included in this library but not exported.
     other-modules: Arte
+                   Regras
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

@@ -1,65 +1,28 @@
-module Tabuleiro (
-    Celula(..),
-    TabuleiroPequeno,
-    TabuleiroGrande,
-    criarTabuleiroPequeno,
-    criarTabuleiroGrande,
-    mostrarTabuleiroPequenoCrua,
-    mostrarTabuleiroGrandeCrua
-) where
+module Tabuleiro where
 
-import Data.List (intercalate)
+import Types
+import Arte (clearScreen)
+import System.IO (readFile)
 
--- Representa o valor de uma célula
-data Celula = Vazia | X | O deriving (Eq)
+-- Converte uma célula do tabuleiro para um caractere para exibição
+cellToChar :: Cell -> Char
+cellToChar Nothing  = '.'
+cellToChar (Just p) = head (show p)
 
-instance Show Celula where
-    show Vazia = "0"
-    show X     = "X"
-    show O     = "O"
+-- Preenche o template do tabuleiro com os dados atuais do jogo
+popularTemplate :: String -> [Char] -> String
+popularTemplate [] _ = []
+popularTemplate template [] = template
+popularTemplate (t:ts) (d:ds)
+    | t == '_'  = d : popularTemplate ts ds
+    | otherwise = t : popularTemplate ts (d:ds)
 
--- Um tabuleiro pequeno (3x3) é uma matriz de células
-type TabuleiroPequeno = [[Celula]]
-
--- Um tabuleiro grande (3x3) é uma matriz de tabuleiros pequenos
-type TabuleiroGrande = [[TabuleiroPequeno]]
-
--- Cria um tabuleiro pequeno vazio (3x3)
-criarTabuleiroPequeno :: TabuleiroPequeno
-criarTabuleiroPequeno = replicate 3 (replicate 3 Vazia)
-
--- Cria um tabuleiro grande vazio (3x3 de tabuleiros pequenos)
-criarTabuleiroGrande :: TabuleiroGrande
-criarTabuleiroGrande = replicate 3 (replicate 3 criarTabuleiroPequeno)
-
--- Mostra célula cru (0 para vazia)
-mostrarCelulaCrua :: Celula -> String
-mostrarCelulaCrua Vazia = "0"
-mostrarCelulaCrua X     = "X"
-mostrarCelulaCrua O     = "O"
-
--- Mostra linha cru do tabuleiro pequeno (ex: "0 0 X")
-mostrarLinhaCrua :: [Celula] -> String
-mostrarLinhaCrua linha = intercalate " " (map mostrarCelulaCrua linha)
-
--- Mostra tabuleiro pequeno cru, linha por linha
-mostrarTabuleiroPequenoCrua :: TabuleiroPequeno -> String
-mostrarTabuleiroPequenoCrua tab =
-    unlines $ map mostrarLinhaCrua tab
-
-mostrarTabuleiroGrandeCrua :: TabuleiroGrande -> String
-mostrarTabuleiroGrandeCrua tabuleiroGrande =
-    let
-        juntarLinhasLinhaGrande :: [TabuleiroPequeno] -> [String]
-        juntarLinhasLinhaGrande linhaTabs =
-            let linhasTabs = map (map mostrarLinhaCrua) linhaTabs
-                combinarLinha n = intercalate " || " [ linhas !! n | linhas <- linhasTabs ]
-            in [combinarLinha 0, combinarLinha 1, combinarLinha 2]
-
-        separadorLinha = replicate 6 '-' ++ "++" ++ replicate 7 '-' ++ "++" ++ replicate 6 '-'
-
-        grupos = map juntarLinhasLinhaGrande tabuleiroGrande
-        linhasCompletas = intercalate [separadorLinha] grupos
-    in unlines linhasCompletas
-
-
+-- Desenha o tabuleiro na tela
+desenharTabuleiro :: GameState -> IO ()
+desenharTabuleiro gameState = do
+    template <- readFile "src/board_template.txt"
+    let todasAsCelulas = concatMap concat (concat (board gameState))
+    let celulasEmChar = map cellToChar todasAsCelulas
+    let tabuleiroPreenchido = popularTemplate template celulasEmChar
+    clearScreen
+    putStrLn tabuleiroPreenchido
