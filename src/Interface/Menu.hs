@@ -1,4 +1,4 @@
-module Menu where
+module Interface.Menu where
 
 import Arte (exibirInicio)
 
