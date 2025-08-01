@@ -60,7 +60,8 @@ library
 
     -- Modules exported by the library.
     exposed-modules:  Types
-                      Interface.Tabuleiro
+                      Interface.TabuleiroMaior
+                      Interface.TabuleiroMenor
                       Interface.Menu
                                           
     -- Modules included in this library but not exported.
