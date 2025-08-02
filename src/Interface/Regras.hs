@@ -1,8 +1,7 @@
-module Regras where
+module Interface.Regras where
 
-import Arte (clearScreen)
+import Interface.Arte (clearScreen)
 
--- Funções auxiliares para adicionar cor ao texto do terminal
 corAmarela :: String -> String
 corAmarela texto = "\ESC[33m" ++ texto ++ "\ESC[0m"
 
@@ -38,5 +37,5 @@ exibirRegras = do
     putStrLn "       - Se houver empate na contagem, a 'Velha' é considerada a vencedora.                                   "
     putStrLn "                                                                                                              "
     putStrLn " Pressione Enter para voltar ao menu..."
-    _ <- getLine -- Espera o usuário pressionar Enter
+    _ <- getLine 
     return ()

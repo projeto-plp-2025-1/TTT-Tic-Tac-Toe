@@ -1,6 +1,6 @@
-module Arte where
+module Interface.Arte where
 
--- Limpa o terminal usando códigos de escape ANSI.
+-- Limpa o terminal 
 clearScreen :: IO ()
 clearScreen = putStr "\ESC[2J\ESC[H"
 
@@ -41,6 +41,7 @@ exibirVencedor nomeVencedor = do
     putStrLn "                                                                                                                                                  "  
     putStrLn $ "                                Parabéns, " ++ nomeVencedor ++ "! Você venceu a partida.                                                        "                                                       
 
+-- Exibe a tela da Velha.
 exibirVelha :: IO() 
 exibirVelha = do
         putStrLn "                                                                                                                      "

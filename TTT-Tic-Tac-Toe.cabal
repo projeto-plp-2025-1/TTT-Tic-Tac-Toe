@@ -59,14 +59,14 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  Types
-                      Interface.TabuleiroMaior
-                      Interface.TabuleiroMenor
-                      Interface.Menu
+    exposed-modules:  Utils.Types
+                      Core.TabuleiroMaior
+                      Core.TabuleiroMenor
                                           
     -- Modules included in this library but not exported.
-    other-modules: Arte
-                   Regras
+    other-modules: Interface.Arte
+                   Interface.Menu
+                   Interface.Regras
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

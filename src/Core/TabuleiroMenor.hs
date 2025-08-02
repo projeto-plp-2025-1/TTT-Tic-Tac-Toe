@@ -1,8 +1,7 @@
--- Mantido com pequenas alterações para focar no fluxo de retorno
-module Interface.TabuleiroMenor where
+module Core.TabuleiroMenor where
 
-import Types
-import Arte (clearScreen)
+import Utils.Types
+import Interface.Arte (clearScreen)
 import Data.Char (toUpper)
 import System.IO (hFlush, stdout)
 import Text.Read (readMaybe)
@@ -160,7 +159,6 @@ getColIndex c = case c of
     9 -> Just 14;
       _   -> Nothing
 
-
 replaceAtIndex :: Int -> Char -> String -> String
 replaceAtIndex i char str = take i str ++ [char] ++ drop (i + 1) str
 
@@ -176,14 +174,11 @@ tryMoveSmall board line col player =
                     let
                         updatedLine = replaceAtIndex colIndex player targetLine
                         newBoard = take lineIndex board ++ [updatedLine] ++ drop (lineIndex + 1) board
-                    in
-                        Just newBoard
-                else
-                    Nothing
+                    in Just newBoard
+                else Nothing
         _ -> Nothing
 
--- O loop do tabuleiro menor retorna o estado do tabuleiro.
-gameLoopSmall :: [String] -> Char -> IO [String]
+gameLoopSmall :: [String] -> Char -> IO (Maybe [String])
 gameLoopSmall board player = do
     clearScreen
     putStrLn ""
@@ -191,27 +186,34 @@ gameLoopSmall board player = do
     putStrLn $ "Turno do Jogador: " ++ [player]
     putStrLn "(Tabuleiro Menor)"
 
-    putStr "Digite a linha (A-C): "
-    hFlush stdout
-    lineInput <- getLine
-    
-    putStr "Digite a coluna (1-3): "
-    hFlush stdout
-    colInput <- getLine
+    putStrLn "Aperte Enter para prosseguir, ou 'Q' para retornar ao tabuleiro maior: "
+    opcao <- getLine
+    if map toUpper opcao == "Q"
+        then do
+            putStrLn "Retornando ao tabuleiro maior..."
+            return Nothing
+        else do
+            putStr "Digite a linha: "
+            hFlush stdout
+            lineInput <- getLine
 
-    let maybeCol = readMaybe colInput :: Maybe Int
+            putStr "Digite a coluna: "
+            hFlush stdout
+            colInput <- getLine
 
-    case (lineInput, maybeCol) of
-        (l:_, Just c) -> do
-            case tryMoveSmall board (toUpper l) c player of
-                Just newBoard -> do
-                    putStrLn "Jogada no tabuleiro menor realizada!"
-                    putStrLn "Pressione Enter para retornar ao tabuleiro maior..."
-                    _ <- getLine
-                    return newBoard -- Retorna o tabuleiro atualizado e encerra este loop
-                Nothing -> do
-                    putStrLn "--- JOGADA INVÁLIDA! Tente novamente. ---"
+            let maybeCol = readMaybe colInput :: Maybe Int
+
+            case (lineInput, maybeCol) of
+                (l:_, Just c) -> do
+                    case tryMoveSmall board (toUpper l) c player of
+                        Just newBoard -> do
+                            putStrLn "Jogada no tabuleiro menor realizada!"
+                            putStrLn "Pressione Enter para retornar ao tabuleiro maior..."
+                            _ <- getLine
+                            return (Just newBoard)
+                        Nothing -> do
+                            putStrLn "--- JOGADA INVÁLIDA! Tente novamente. ---"
+                            gameLoopSmall board player
+                _ -> do
+                    putStrLn "--- ENTRADA INVÁLIDA! Use uma letra e número válidos. ---"
                     gameLoopSmall board player
-        _ -> do
-            putStrLn "--- ENTRADA INVÁLIDA! Use uma letra de A-C e um número de 1-3. ---"
-            gameLoopSmall board player
