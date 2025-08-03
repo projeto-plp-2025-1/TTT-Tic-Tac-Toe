@@ -99,7 +99,8 @@ executable TTT-Tic-Tac-Toe
         TTT-Tic-Tac-Toe,
         text,
         containers,
-        split 
+        split,
+        process >= 1.6
 
     -- Directories containing source files.
     hs-source-dirs:   app, src

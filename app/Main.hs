@@ -5,6 +5,8 @@ import System.IO (hFlush, stdout)
 import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
+import System.Process (callCommand)
+import GHC.IO.Encoding (setLocaleEncoding, utf8)
 import Core.TabuleiroMaior (gameLoop)
 import Core.TabuleiroMenor (smallBoard1Template, smallBoard2Template, smallBoard3Template,
                                 smallBoard4Template, smallBoard5Template, smallBoard6Template,
@@ -12,6 +14,8 @@ import Core.TabuleiroMenor (smallBoard1Template, smallBoard2Template, smallBoard
 
 main :: IO ()
 main = do
+    callCommand "chcp 65001 > nul"  -- altera o codepage do terminal
+    setLocaleEncoding utf8
     clearScreen
     opcao <- exibirMenu
     case opcao of
