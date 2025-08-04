@@ -1,18 +1,29 @@
 module Main where
 
+import System.Process (callCommand)
+import GHC.IO.Encoding (setLocaleEncoding, utf8)
+import System.Info (os)
 import Utils.Types
 import System.IO (hFlush, stdout)
 import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
-import System.Process (callCommand)
 import Core.TabuleiroMaior (gameLoop)
 import Core.TabuleiroMenor (smallBoard1Template, smallBoard2Template, smallBoard3Template,
                                 smallBoard4Template, smallBoard5Template, smallBoard6Template,
                                 smallBoard7Template, smallBoard8Template, smallBoard9Template)
 
+-- Compatibilidade com Windows e Linux
+setUtf8EncodingCompat :: IO ()
+setUtf8EncodingCompat =
+    if os == "mingw32"
+        then callCommand "chcp 65001 > nul"
+        else return ()
+
 main :: IO ()
 main = do
+    setUtf8EncodingCompat
+    setLocaleEncoding utf8
     clearScreen
     opcao <- exibirMenu
     case opcao of
@@ -78,8 +89,7 @@ iniciarJogo = do
             smallBoard7Template, smallBoard8Template, smallBoard9Template
             ]
 
-    -- Aqui passamos os símbolos do jogador 1 e 2, e começamos com o do jogador 1
-    gameLoop initialBoard initialSmallBoards player1Symbol player2Symbol player1Symbol
+    gameLoop initialBoard initialSmallBoards player1Symbol player2Symbol player1Symbol Nothing
 
 sairDoJogo :: IO ()
 sairDoJogo = do

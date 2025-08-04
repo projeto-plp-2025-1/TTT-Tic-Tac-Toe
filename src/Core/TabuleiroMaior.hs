@@ -10,31 +10,36 @@ import Core.TabuleiroMenor (gameLoopSmall,
                             smallBoard4Template, smallBoard5Template, smallBoard6Template,
                             smallBoard7Template, smallBoard8Template, smallBoard9Template)
 
+-- Converte uma entrada (1 a 9) para o índice correspondente (0 a 8)
 getQuadrantIndex :: Int -> Maybe Int
 getQuadrantIndex i = if i >= 1 && i <= 9 then Just (i - 1) else Nothing
 
+-- Retorna o template do tabuleiro menor baseado no índice
 getSmallBoardTemplate :: Int -> [String]
 getSmallBoardTemplate index =
     case index of
-        1 -> smallBoard1Template
-        2 -> smallBoard2Template
-        3 -> smallBoard3Template
-        4 -> smallBoard4Template
-        5 -> smallBoard5Template
-        6 -> smallBoard6Template
-        7 -> smallBoard7Template
-        8 -> smallBoard8Template
+        0 -> smallBoard1Template
+        1 -> smallBoard2Template
+        2 -> smallBoard3Template
+        3 -> smallBoard4Template
+        4 -> smallBoard5Template
+        5 -> smallBoard6Template
+        6 -> smallBoard7Template
+        7 -> smallBoard8Template
+        8 -> smallBoard9Template
         _ -> smallBoard9Template
 
+-- Substitui um elemento em uma lista pelo novo valor na posição i
 replaceAtIndex :: Int -> a -> [a] -> [a]
 replaceAtIndex i x xs = take i xs ++ [x] ++ drop (i + 1) xs
 
-switchPlayer :: Char -> Char
-switchPlayer 'X' = 'O'
-switchPlayer 'O' = 'X'
-switchPlayer other = other
+-- Alterna entre os símbolos dos dois jogadores
+switchPlayer :: Char -> Char -> Char -> Char
+switchPlayer player1 player2 currentPlayer
+    | currentPlayer == player1 = player2
+    | otherwise                = player1
 
--- Função que encontra qual célula mudou entre dois tabuleiros menores (templates)
+-- Localiza a célula que mudou entre o tabuleiro antigo e o novo (linha, coluna, símbolo)
 findChangedCell :: [String] -> [String] -> Maybe (Int, Int, Char)
 findChangedCell oldBoard newBoard =
     let indexedRows = zip [0..] (zip oldBoard newBoard)
@@ -46,182 +51,60 @@ findChangedCell oldBoard newBoard =
                 _ -> Nothing
     in foldr (\row acc -> case acc of Just _ -> acc; Nothing -> findInRow row) Nothing indexedRows
 
--- Mapeamento de linhas e colunas do quadrante 1 para o maior
-lineTemplateToSmallIndexQuad1 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad1 lineIndex = case lineIndex of
-    2 -> Just 2
-    4 -> Just 4
-    6 -> Just 6
-    _ -> Nothing
+-- Converte coordenadas de linha e coluna no tabuleiro menor para índice (0 a 8)
+cellToIndex :: Int -> Int -> Maybe Int
+cellToIndex line col = do
+    lIdx <- case line of
+        2 -> Just 0
+        4 -> Just 1
+        6 -> Just 2
+        _ -> Nothing
+    cIdx <- case col of
+        5  -> Just 0
+        10 -> Just 1
+        14 -> Just 2
+        _ -> Nothing
+    Just (lIdx * 3 + cIdx)
 
-colTemplateToSmallIndexQuad1 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad1 colIndex = case colIndex of
-    5  -> Just 5
-    10 -> Just 10
-    14 -> Just 14
-    _  -> Nothing
+-- Descobre o índice da célula modificada com base no tabuleiro antes e depois
+getChangedCellIndex :: [String] -> [String] -> Maybe Int
+getChangedCellIndex oldBoard newBoard = do
+    (line, col, _) <- findChangedCell oldBoard newBoard
+    cellToIndex line col
 
--- Mapeamento de linhas e colunas do quadrante 2 para o maior
-lineTemplateToSmallIndexQuad2 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad2 lineIndex = case lineIndex of
-    2 -> Just 2
-    4 -> Just 4
-    6 -> Just 6
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad2 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad2 colIndex = case colIndex of
-    5  -> Just 20
-    10 -> Just 25
-    14 -> Just 30
-    _  -> Nothing
-
--- Mapeamento de linhas e colunas do quadrante 3 para o maior
-lineTemplateToSmallIndexQuad3 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad3 lineIndex = case lineIndex of
-    2 -> Just 2
-    4 -> Just 4
-    6 -> Just 6
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad3 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad3 colIndex = case colIndex of
-    5  -> Just 36
-    10 -> Just 40
-    14 -> Just 44
-    _  -> Nothing
-
--- Mapeamento de linhas e colunas do quadrante 4 para o maior
-lineTemplateToSmallIndexQuad4 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad4 lineIndex = case lineIndex of
-    2 -> Just 8
-    4 -> Just 10
-    6 -> Just 12
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad4 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad4 colIndex = case colIndex of
-    5  -> Just 5
-    10 -> Just 10
-    14 -> Just 14
-    _  -> Nothing
-
--- Mapeamento de linhas e colunas do quadrante 5 para o maior
-lineTemplateToSmallIndexQuad5 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad5 lineIndex = case lineIndex of
-    2 -> Just 8
-    4 -> Just 10
-    6 -> Just 12
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad5 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad5 colIndex = case colIndex of
-    5  -> Just 20
-    10 -> Just 25
-    14 -> Just 30
-    _  -> Nothing
-
--- Mapeamento de linhas e colunas do quadrante 6 para o maior
-lineTemplateToSmallIndexQuad6 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad6 lineIndex = case lineIndex of
-    2 -> Just 8
-    4 -> Just 10
-    6 -> Just 12
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad6 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad6 colIndex = case colIndex of
-    5  -> Just 36
-    10 -> Just 40
-    14 -> Just 44
-    _  -> Nothing
-
--- Mapeamento de linhas e colunas do quadrante 7 para o maior
-lineTemplateToSmallIndexQuad7 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad7 lineIndex = case lineIndex of
-    2 -> Just 14
-    4 -> Just 16
-    6 -> Just 18
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad7 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad7 colIndex = case colIndex of
-    5  -> Just 5
-    10 -> Just 10
-    14 -> Just 14
-    _  -> Nothing
-
--- Mapeamento de linhas e colunas do quadrante 8 para o maior
-lineTemplateToSmallIndexQuad8 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad8 lineIndex = case lineIndex of
-    2 -> Just 14
-    4 -> Just 16
-    6 -> Just 18
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad8 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad8 colIndex = case colIndex of
-    5  -> Just 20
-    10 -> Just 25
-    14 -> Just 30
-    _  -> Nothing
-
--- Mapeamento de linhas e colunas do quadrante 9 para o maior
-lineTemplateToSmallIndexQuad9 :: Int -> Maybe Int
-lineTemplateToSmallIndexQuad9 lineIndex = case lineIndex of
-    2 -> Just 14
-    4 -> Just 16
-    6 -> Just 18
-    _ -> Nothing
-
-colTemplateToSmallIndexQuad9 :: Int -> Maybe Int
-colTemplateToSmallIndexQuad9 colIndex = case colIndex of
-    5  -> Just 36
-    10 -> Just 40
-    14 -> Just 44
-    _  -> Nothing
-
--- Função para padronizar o mapeamento de linhas
-getLineMapper :: Int -> (Int -> Maybe Int)
-getLineMapper q = case q of
-    0 -> lineTemplateToSmallIndexQuad1
-    1 -> lineTemplateToSmallIndexQuad2
-    2 -> lineTemplateToSmallIndexQuad3
-    3 -> lineTemplateToSmallIndexQuad4
-    4 -> lineTemplateToSmallIndexQuad5
-    5 -> lineTemplateToSmallIndexQuad6
-    6 -> lineTemplateToSmallIndexQuad7
-    7 -> lineTemplateToSmallIndexQuad8
-    8 -> lineTemplateToSmallIndexQuad9
-    _ -> \_ -> Nothing
-
--- Função para padronizar o mapeamento de colunas
-getColMapper :: Int -> (Int -> Maybe Int)
-getColMapper q = case q of
-    0 -> colTemplateToSmallIndexQuad1
-    1 -> colTemplateToSmallIndexQuad2
-    2 -> colTemplateToSmallIndexQuad3
-    3 -> colTemplateToSmallIndexQuad4
-    4 -> colTemplateToSmallIndexQuad5
-    5 -> colTemplateToSmallIndexQuad6
-    6 -> colTemplateToSmallIndexQuad7
-    7 -> colTemplateToSmallIndexQuad8
-    8 -> colTemplateToSmallIndexQuad9
-    _ -> \_ -> Nothing
-
-
+-- Atualiza o tabuleiro maior com o símbolo jogado no tabuleiro menor correspondente
 updateBoard :: [String] -> Int -> [String] -> [String] -> Maybe [String]
 updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
+    -- Descobre a célula que mudou no tabuleiro menor
     (changedLineTemplate, changedColTemplate, playerChar) <- findChangedCell oldSmallBoard newSmallBoard
 
-    let lineMapper = getLineMapper quadrantIndex
-    let colMapper  = getColMapper quadrantIndex
+    let lineMapper = case quadrantIndex of
+            0 -> \x -> case x of { 2 -> Just 2; 4 -> Just 4; 6 -> Just 6; _ -> Nothing }
+            1 -> \x -> case x of { 2 -> Just 2; 4 -> Just 4; 6 -> Just 6; _ -> Nothing }
+            2 -> \x -> case x of { 2 -> Just 2; 4 -> Just 4; 6 -> Just 6; _ -> Nothing }
+            3 -> \x -> case x of { 2 -> Just 8; 4 -> Just 10; 6 -> Just 12; _ -> Nothing }
+            4 -> \x -> case x of { 2 -> Just 8; 4 -> Just 10; 6 -> Just 12; _ -> Nothing }
+            5 -> \x -> case x of { 2 -> Just 8; 4 -> Just 10; 6 -> Just 12; _ -> Nothing }
+            6 -> \x -> case x of { 2 -> Just 14; 4 -> Just 16; 6 -> Just 18; _ -> Nothing }
+            7 -> \x -> case x of { 2 -> Just 14; 4 -> Just 16; 6 -> Just 18; _ -> Nothing }
+            8 -> \x -> case x of { 2 -> Just 14; 4 -> Just 16; 6 -> Just 18; _ -> Nothing }
+            _ -> \_ -> Nothing
 
-    -- Mapeia linha e coluna diretamente
+    let colMapper = case quadrantIndex of
+            0 -> \x -> case x of { 5 -> Just 5; 10 -> Just 10; 14 -> Just 14; _ -> Nothing }
+            1 -> \x -> case x of { 5 -> Just 20; 10 -> Just 25; 14 -> Just 30; _ -> Nothing }
+            2 -> \x -> case x of { 5 -> Just 36; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
+            3 -> \x -> case x of { 5 -> Just 5; 10 -> Just 10; 14 -> Just 14; _ -> Nothing }
+            4 -> \x -> case x of { 5 -> Just 20; 10 -> Just 25; 14 -> Just 30; _ -> Nothing }
+            5 -> \x -> case x of { 5 -> Just 36; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
+            6 -> \x -> case x of { 5 -> Just 5; 10 -> Just 10; 14 -> Just 14; _ -> Nothing }
+            7 -> \x -> case x of { 5 -> Just 20; 10 -> Just 25; 14 -> Just 30; _ -> Nothing }
+            8 -> \x -> case x of { 5 -> Just 36; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
+            _ -> \_ -> Nothing
+
     l <- lineMapper changedLineTemplate
     c <- colMapper changedColTemplate
 
-    -- Atualiza a célula correta no tabuleiro maior
     let targetLine = bigBoard !! l
 
     if targetLine !! c /= ' '
@@ -231,13 +114,21 @@ updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
                 updatedBigBoard = replaceAtIndex l updatedLine bigBoard
             in Just updatedBigBoard
 
--- Atualizado para receber player1Symbol, player2Symbol e currentPlayerSymbol
-gameLoop :: [String] -> [[String]] -> Char -> Char -> Char -> IO ()
-gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer = do
+gameLoop :: [String]       -- tabuleiro maior
+         -> [[String]]     -- lista dos 9 tabuleiros menores
+         -> Char           -- símbolo do jogador 1
+         -> Char           -- símbolo do jogador 2
+         -> Char           -- jogador atual
+         -> Maybe Int      -- quadrante permitido para jogar (Nothing = qualquer quadrante)
+         -> IO ()
+gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant = do
     clearScreen
     putStrLn ""
     putStrLn (unlines bigBoard)
     putStrLn $ "Turno do Jogador: " ++ [currentPlayer]
+    case maybeNextQuadrant of
+        Just idx -> putStrLn $ "Você deve jogar no quadrante: " ++ show (idx + 1)
+        Nothing  -> putStrLn "Você pode jogar em qualquer quadrante."
 
     putStr "Escolha o quadrante (1-9) que quer jogar ou 'Q' para sair: "
     hFlush stdout
@@ -249,39 +140,47 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer = do
         let maybeIndex = readMaybe input :: Maybe Int
 
         case maybeIndex of
-            Just index ->
-                case getQuadrantIndex index of
-                    Just boardIndex -> do
-                        putStrLn $ "\n--- Acessando o quadrante " ++ show index ++ " ---"
-                        putStrLn "Pressione Enter para continuar..."
-                        _ <- getLine
-
-                        let currentSmallBoard = smallBoards !! boardIndex
-
-                        maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer
-
-                        case maybeNewSmallBoard of
-                            Just newBoard -> do
-                                let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
-                                case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
-                                    Just newBigBoard -> do
-                                        let nextPlayer = if currentPlayer == player1Symbol then player2Symbol else player1Symbol
-                                        gameLoop newBigBoard newSmallBoards player1Symbol player2Symbol nextPlayer
-                                    Nothing -> do
-                                        putStrLn "Erro: posição já ocupada no tabuleiro maior!"
-                                        putStrLn "Pressione Enter para continuar..."
-                                        _ <- getLine
-                                        gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer
-                            Nothing -> do
-                                putStrLn "\nVocê voltou para o tabuleiro maior sem jogar."
-                                putStrLn "Pressione Enter para continuar..."
-                                _ <- getLine
-                                gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer
-
-                    Nothing -> do
+            Just index -> do
+                let boardIndex = index - 1
+                if boardIndex < 0 || boardIndex >= length smallBoards
+                    then do
                         putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
-                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer
+                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
+                    else if maybeNextQuadrant /= Nothing && maybeNextQuadrant /= Just boardIndex
+                        then do
+                            putStrLn "\nVocê deve jogar no quadrante determinado pelo movimento anterior."
+                            putStrLn "Pressione Enter para continuar..."
+                            _ <- getLine
+                            gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
+                        else do
+                            putStrLn $ "\n--- Acessando o quadrante " ++ show index ++ " ---"
+                            putStrLn "Pressione Enter para continuar..."
+                            _ <- getLine
+
+                            let currentSmallBoard = smallBoards !! boardIndex
+
+                            maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer
+
+                            case maybeNewSmallBoard of
+                                Just newBoard -> do
+                                    let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
+                                    case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
+                                        Just newBigBoard -> do
+                                            let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
+                                            let nextQuadrant = getChangedCellIndex currentSmallBoard newBoard
+                                            gameLoop newBigBoard newSmallBoards player1Symbol player2Symbol nextPlayer nextQuadrant
+                                        Nothing -> do
+                                            putStrLn "Erro: posição já ocupada no tabuleiro maior!"
+                                            putStrLn "Pressione Enter para continuar..."
+                                            _ <- getLine
+                                            gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
+                                Nothing -> do
+                                    putStrLn "\nVocê voltou para o tabuleiro maior sem jogar."
+                                    putStrLn "Pressione Enter para continuar..."
+                                    _ <- getLine
+                                    gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
 
             Nothing -> do
                 putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
-                gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer
+                gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
+
