@@ -12,4 +12,5 @@ exibirMenu = do
     putStrLn "  3. Sair" -- O jogo pode ser encerrado a qualquer momento por qualquer um dos jogadores.
     putStrLn ""
     putStr "Escolha uma opção: "
+    putStrLn ""
     getLine

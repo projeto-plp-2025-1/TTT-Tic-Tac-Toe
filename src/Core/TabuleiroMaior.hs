@@ -231,13 +231,13 @@ updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
                 updatedBigBoard = replaceAtIndex l updatedLine bigBoard
             in Just updatedBigBoard
 
--- Loop principal do jogo
-gameLoop :: [String] -> [[String]] -> Char -> IO ()
-gameLoop bigBoard smallBoards player = do
+-- Atualizado para receber player1Symbol, player2Symbol e currentPlayerSymbol
+gameLoop :: [String] -> [[String]] -> Char -> Char -> Char -> IO ()
+gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer = do
     clearScreen
     putStrLn ""
     putStrLn (unlines bigBoard)
-    putStrLn $ "Turno do Jogador: " ++ [player]
+    putStrLn $ "Turno do Jogador: " ++ [currentPlayer]
 
     putStr "Escolha o quadrante (1-9) que quer jogar ou 'Q' para sair: "
     hFlush stdout
@@ -258,29 +258,30 @@ gameLoop bigBoard smallBoards player = do
 
                         let currentSmallBoard = smallBoards !! boardIndex
 
-                        maybeNewSmallBoard <- gameLoopSmall currentSmallBoard player
+                        maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer
 
                         case maybeNewSmallBoard of
                             Just newBoard -> do
                                 let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
                                 case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
-                                    Just newBigBoard -> gameLoop newBigBoard newSmallBoards (switchPlayer player)
+                                    Just newBigBoard -> do
+                                        let nextPlayer = if currentPlayer == player1Symbol then player2Symbol else player1Symbol
+                                        gameLoop newBigBoard newSmallBoards player1Symbol player2Symbol nextPlayer
                                     Nothing -> do
                                         putStrLn "Erro: posição já ocupada no tabuleiro maior!"
                                         putStrLn "Pressione Enter para continuar..."
                                         _ <- getLine
-                                        gameLoop bigBoard newSmallBoards player
+                                        gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer
                             Nothing -> do
                                 putStrLn "\nVocê voltou para o tabuleiro maior sem jogar."
                                 putStrLn "Pressione Enter para continuar..."
                                 _ <- getLine
-                                gameLoop bigBoard smallBoards player
+                                gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer
 
                     Nothing -> do
                         putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
-                        gameLoop bigBoard smallBoards player
+                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer
 
             Nothing -> do
                 putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
-                gameLoop bigBoard smallBoards player
-
+                gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer

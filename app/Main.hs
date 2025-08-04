@@ -6,7 +6,6 @@ import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
 import System.Process (callCommand)
-import GHC.IO.Encoding (setLocaleEncoding, utf8)
 import Core.TabuleiroMaior (gameLoop)
 import Core.TabuleiroMenor (smallBoard1Template, smallBoard2Template, smallBoard3Template,
                                 smallBoard4Template, smallBoard5Template, smallBoard6Template,
@@ -14,8 +13,6 @@ import Core.TabuleiroMenor (smallBoard1Template, smallBoard2Template, smallBoard
 
 main :: IO ()
 main = do
-    callCommand "chcp 65001 > nul"  -- altera o codepage do terminal
-    setLocaleEncoding utf8
     clearScreen
     opcao <- exibirMenu
     case opcao of
@@ -24,10 +21,30 @@ main = do
         "3" -> sairDoJogo
         _   -> main -- caso opção inválida, volta ao menu
 
+-- Função para pedir símbolo, garantindo que não seja espaço e não seja o já escolhido
+askPlayerSymbol :: String -> [Char] -> IO Char
+askPlayerSymbol prompt taken = do
+    putStr (prompt ++ " (não pode ser espaço um espaço vazio e nem nenhum destes -> " ++ taken ++ "): ")
+    hFlush stdout
+    input <- getLine
+    case input of
+        [c] | c /= ' ' && c `notElem` taken -> return c
+        _ -> do
+            putStrLn "Símbolo inválido, tente novamente."
+            askPlayerSymbol prompt taken
+
 iniciarJogo :: IO ()
 iniciarJogo = do
-    putStrLn "Obrigado por jogar!"
-    putStr "Pressione Enter para começar..."
+    putStrLn "Escolha o símbolo do Jogador 1:"
+    player1Symbol <- askPlayerSymbol "Símbolo do Jogador 1" []
+
+    putStrLn "Escolha o símbolo do Jogador 2:"
+    player2Symbol <- askPlayerSymbol "Símbolo do Jogador 2" [player1Symbol]
+
+    putStrLn $ "Jogador 1 usará: " ++ [player1Symbol]
+    putStrLn $ "Jogador 2 usará: " ++ [player2Symbol]
+
+    putStrLn "Pressione Enter para começar..."
     hFlush stdout
     _ <- getLine
 
@@ -61,7 +78,8 @@ iniciarJogo = do
             smallBoard7Template, smallBoard8Template, smallBoard9Template
             ]
 
-    gameLoop initialBoard initialSmallBoards 'X'
+    -- Aqui passamos os símbolos do jogador 1 e 2, e começamos com o do jogador 1
+    gameLoop initialBoard initialSmallBoards player1Symbol player2Symbol player1Symbol
 
 sairDoJogo :: IO ()
 sairDoJogo = do
