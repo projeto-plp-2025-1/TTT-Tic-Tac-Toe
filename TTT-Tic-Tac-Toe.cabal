@@ -60,6 +60,7 @@ library
 
     -- Modules exported by the library.
     exposed-modules:  Utils.Types
+                      Utils.VerificacaoVitoria
                       Core.TabuleiroMaior
                       Core.TabuleiroMenor
                                           

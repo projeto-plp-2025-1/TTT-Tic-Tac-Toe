@@ -5,6 +5,7 @@ import Interface.Arte (clearScreen)
 import Data.Char (toUpper)
 import System.IO (hFlush, stdout)
 import Text.Read (readMaybe)
+import Utils.VerificacaoVitoria (verificarVitoria)
 
 smallBoard1Template :: [String]
 smallBoard1Template = [
@@ -15,6 +16,7 @@ smallBoard1Template = [
     "  ║    │    │    ║ B ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ C ",
+    "  ║  QUADRANTE 1 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -27,6 +29,7 @@ smallBoard2Template = [
     "  ║    │    │    ║ B ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ C ",
+    "  ║  QUADRANTE 2 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -39,6 +42,7 @@ smallBoard3Template = [
     "  ║    │    │    ║ B ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ C ",
+    "  ║  QUADRANTE 3 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -51,6 +55,7 @@ smallBoard4Template = [
     "  ║    │    │    ║ E ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ F ",
+    "  ║  QUADRANTE 4 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -63,6 +68,7 @@ smallBoard5Template = [
     "  ║    │    │    ║ E ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ F ",
+    "  ║  QUADRANTE 5 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -75,6 +81,7 @@ smallBoard6Template = [
     "  ║    │    │    ║ E ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ F ",
+    "  ║  QUADRANTE 6 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -87,6 +94,7 @@ smallBoard7Template = [
     "  ║    │    │    ║ H ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ I ",
+    "  ║  QUADRANTE 7 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -99,6 +107,7 @@ smallBoard8Template = [
     "  ║    │    │    ║ H ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ I ",
+    "  ║  QUADRANTE 8 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -111,6 +120,7 @@ smallBoard9Template = [
     "  ║    │    │    ║ H ",
     "  ║────┼────┼────╢   ",
     "  ║    │    │    ║ I ",
+    "  ║  QUADRANTE 9 ║   ",
     "  ╚══════════════╝   "
     ]
 
@@ -162,7 +172,7 @@ getColIndex c = case c of
 replaceAtIndex :: Int -> Char -> String -> String
 replaceAtIndex i char str = take i str ++ [char] ++ drop (i + 1) str
 
-tryMoveSmall :: [String] -> Char -> Int -> Char -> Maybe [String]
+tryMoveSmall :: [String] -> Char -> Int -> Char -> Maybe ([String], Bool)
 tryMoveSmall board line col player =
     case (getRowIndex line, getColIndex col) of
         (Just lineIndex, Just colIndex) ->
@@ -174,9 +184,11 @@ tryMoveSmall board line col player =
                     let
                         updatedLine = replaceAtIndex colIndex player targetLine
                         newBoard = take lineIndex board ++ [updatedLine] ++ drop (lineIndex + 1) board
-                    in Just newBoard
+                        venceu = verificarVitoria newBoard player
+                    in Just (newBoard, venceu)
                 else Nothing
         _ -> Nothing
+
 
 gameLoopSmall :: [String] -> Char -> IO (Maybe [String])
 gameLoopSmall board player = do
@@ -206,8 +218,11 @@ gameLoopSmall board player = do
             case (lineInput, maybeCol) of
                 (l:_, Just c) -> do
                     case tryMoveSmall board (toUpper l) c player of
-                        Just newBoard -> do
+                        Just (newBoard, venceu) -> do
                             putStrLn "Jogada no tabuleiro menor realizada!"
+                            if venceu
+                                then putStrLn $ "Vitória do jogador " ++ [player] ++ " no tabuleiro menor!"
+                                else return ()
                             putStrLn "Pressione Enter para retornar ao tabuleiro maior..."
                             _ <- getLine
                             return (Just newBoard)

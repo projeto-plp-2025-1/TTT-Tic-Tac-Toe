@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use lambda-case" #-}
 module Core.TabuleiroMaior where
 
 import Utils.Types
@@ -78,35 +80,38 @@ updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
     -- Descobre a célula que mudou no tabuleiro menor
     (changedLineTemplate, changedColTemplate, playerChar) <- findChangedCell oldSmallBoard newSmallBoard
 
+    -- Funções para mapear linha e coluna do tabuleiro menor para o tabuleiro maior, com base no quadrante
     let lineMapper = case quadrantIndex of
             0 -> \x -> case x of { 2 -> Just 2; 4 -> Just 4; 6 -> Just 6; _ -> Nothing }
             1 -> \x -> case x of { 2 -> Just 2; 4 -> Just 4; 6 -> Just 6; _ -> Nothing }
             2 -> \x -> case x of { 2 -> Just 2; 4 -> Just 4; 6 -> Just 6; _ -> Nothing }
-            3 -> \x -> case x of { 2 -> Just 8; 4 -> Just 10; 6 -> Just 12; _ -> Nothing }
-            4 -> \x -> case x of { 2 -> Just 8; 4 -> Just 10; 6 -> Just 12; _ -> Nothing }
-            5 -> \x -> case x of { 2 -> Just 8; 4 -> Just 10; 6 -> Just 12; _ -> Nothing }
-            6 -> \x -> case x of { 2 -> Just 14; 4 -> Just 16; 6 -> Just 18; _ -> Nothing }
-            7 -> \x -> case x of { 2 -> Just 14; 4 -> Just 16; 6 -> Just 18; _ -> Nothing }
-            8 -> \x -> case x of { 2 -> Just 14; 4 -> Just 16; 6 -> Just 18; _ -> Nothing }
-            _ -> \_ -> Nothing
+            3 -> \x -> case x of { 2 -> Just 9; 4 -> Just 11; 6 -> Just 13; _ -> Nothing }
+            4 -> \x -> case x of { 2 -> Just 9; 4 -> Just 11; 6 -> Just 13; _ -> Nothing }
+            5 -> \x -> case x of { 2 -> Just 9; 4 -> Just 11; 6 -> Just 13; _ -> Nothing }
+            6 -> \x -> case x of { 2 -> Just 16; 4 -> Just 18; 6 -> Just 20; _ -> Nothing }
+            7 -> \x -> case x of { 2 -> Just 16; 4 -> Just 18; 6 -> Just 20; _ -> Nothing }
+            8 -> \x -> case x of { 2 -> Just 16; 4 -> Just 18; 6 -> Just 20; _ -> Nothing }
+            _ -> const Nothing
 
     let colMapper = case quadrantIndex of
             0 -> \x -> case x of { 5 -> Just 5; 10 -> Just 10; 14 -> Just 14; _ -> Nothing }
             1 -> \x -> case x of { 5 -> Just 20; 10 -> Just 25; 14 -> Just 30; _ -> Nothing }
-            2 -> \x -> case x of { 5 -> Just 36; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
+            2 -> \x -> case x of { 5 -> Just 35; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
             3 -> \x -> case x of { 5 -> Just 5; 10 -> Just 10; 14 -> Just 14; _ -> Nothing }
             4 -> \x -> case x of { 5 -> Just 20; 10 -> Just 25; 14 -> Just 30; _ -> Nothing }
-            5 -> \x -> case x of { 5 -> Just 36; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
+            5 -> \x -> case x of { 5 -> Just 35; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
             6 -> \x -> case x of { 5 -> Just 5; 10 -> Just 10; 14 -> Just 14; _ -> Nothing }
             7 -> \x -> case x of { 5 -> Just 20; 10 -> Just 25; 14 -> Just 30; _ -> Nothing }
-            8 -> \x -> case x of { 5 -> Just 36; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
-            _ -> \_ -> Nothing
+            8 -> \x -> case x of { 5 -> Just 35; 10 -> Just 40; 14 -> Just 44; _ -> Nothing }
+            _ -> const Nothing
 
+    -- Mapeia linha e coluna alteradas
     l <- lineMapper changedLineTemplate
     c <- colMapper changedColTemplate
 
     let targetLine = bigBoard !! l
 
+    -- Verifica se posição está vazia
     if targetLine !! c /= ' '
         then Nothing
         else
@@ -114,6 +119,7 @@ updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
                 updatedBigBoard = replaceAtIndex l updatedLine bigBoard
             in Just updatedBigBoard
 
+-- gameLoop: controla a jogabilidade completa entre os tabuleiros
 gameLoop :: [String]       -- tabuleiro maior
          -> [[String]]     -- lista dos 9 tabuleiros menores
          -> Char           -- símbolo do jogador 1
@@ -134,6 +140,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
     hFlush stdout
     input <- getLine
 
+    -- Sai do jogo se digitar Q
     if not (null input) && toUpper (head input) == 'Q' then
         putStrLn "Obrigado por jogar!"
     else do
@@ -159,6 +166,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
 
                             let currentSmallBoard = smallBoards !! boardIndex
 
+                            -- Inicia jogada no tabuleiro menor
                             maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer
 
                             case maybeNewSmallBoard of
@@ -183,4 +191,3 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
             Nothing -> do
                 putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
                 gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
-
