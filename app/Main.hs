@@ -9,7 +9,7 @@ import Data.Char (toUpper)
 import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
-import Core.TabuleiroMaior (gameLoop)
+import Core.TabuleiroMaior (gameLoop, inicializaWinnerBoard)
 import Core.TabuleiroMenor (
     smallBoard1Template, smallBoard2Template, smallBoard3Template,
     smallBoard4Template, smallBoard5Template, smallBoard6Template,
@@ -135,7 +135,9 @@ iniciarJogo = do
                     , smallBoard7Template, smallBoard8Template, smallBoard9Template
                     ]
 
-            gameLoop initialBoard initialSmallBoards symbol1 symbol2 symbol1 Nothing name1 name2
+            let winnerBoard = inicializaWinnerBoard
+
+            gameLoop initialBoard initialSmallBoards symbol1 symbol2 symbol1 Nothing name1 name2 winnerBoard
 
 -- Função auxiliar: obter o ID de um símbolo (para evitar repetição)
 getId :: Char -> Int
