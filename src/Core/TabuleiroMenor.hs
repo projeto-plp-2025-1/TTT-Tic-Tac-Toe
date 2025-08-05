@@ -5,6 +5,13 @@ import Interface.Arte (clearScreen)
 import Data.Char (toUpper)
 import System.IO (hFlush, stdout)
 import Text.Read (readMaybe)
+import Control.Concurrent (forkIO, threadDelay, killThread)
+import Control.Concurrent.MVar
+import Control.Concurrent.Async
+import Data.Time.Clock
+import Control.Concurrent (threadDelay)
+import Control.Concurrent.Async (async, cancel, race)
+import System.IO (hFlush, stdout)
 import Utils.VerificacaoVitoria (verificarVitoria)
 
 smallBoard1Template :: [String]
@@ -190,45 +197,80 @@ tryMoveSmall board line col player =
         _ -> Nothing
 
 
-gameLoopSmall :: [String] -> Char -> IO (Maybe [String])
-gameLoopSmall board player = do
-    clearScreen
-    putStrLn ""
-    putStrLn (unlines board)
-    putStrLn $ "Turno do Jogador: " ++ [player]
-    putStrLn "(Tabuleiro Menor)"
+gameLoopSmall :: [String] -> Char -> [String] -> IO (Maybe [String])
+gameLoopSmall board player bigBoard = do
+    startTime <- getCurrentTime
+    timeUpVar <- newEmptyMVar
 
-    putStrLn "Aperte Enter para prosseguir, ou 'Q' para retornar ao tabuleiro maior: "
-    opcao <- getLine
-    if map toUpper opcao == "Q"
-        then do
-            putStrLn "Retornando ao tabuleiro maior..."
-            return Nothing
-        else do
-            putStr "Digite a linha: "
-            hFlush stdout
-            lineInput <- getLine
+    -- Timer de 2 minutos (120 segundos)
+    _ <- forkIO $ do
+        threadDelay (2 * 60 * 1000000)
+        putMVar timeUpVar ()
 
-            putStr "Digite a coluna: "
-            hFlush stdout
-            colInput <- getLine
+    let loop b = do
+            clearScreen
+            currentTime <- getCurrentTime
+            let secondsElapsed = round $ realToFrac $ diffUTCTime currentTime startTime :: Int
+            let secondsRemaining = max 0 (120 - secondsElapsed)
 
-            let maybeCol = readMaybe colInput :: Maybe Int
+            -- Exibe tempo restante
+            putStrLn $ "\x23F3 Tempo restante: " ++ show secondsRemaining ++ " segundos"
+            putStrLn (unlines b)
+            putStrLn $ "Turno do Jogador: " ++ [player] ++ " (Tabuleiro Menor)"
+            putStrLn "Aperte Enter para jogar, ou 'V' para voltar ao tabuleiro maior:"
+            opcao <- getLine
+            if map toUpper opcao == "V"
+                then do
+                    clearScreen
+                    putStrLn "Visualizando tabuleiro maior:"
+                    putStrLn ""
+                    putStrLn (unlines bigBoard)
+                    putStrLn "\nPressione Enter para voltar ao tabuleiro menor..."
+                    _ <- getLine
+                    timePassed <- checkTimeUp timeUpVar
+                    if timePassed || secondsRemaining <= 0
+                        then do
+                            putStrLn "\n\x23F0 Tempo esgotado! Passando a vez..."
+                            return Nothing
+                        else loop b
+                else do
+                    timePassed <- checkTimeUp timeUpVar
+                    if timePassed || secondsRemaining <= 0
+                        then do
+                            putStrLn "\n\x23F0 Tempo esgotado! Passando a vez..."
+                            return Nothing
+                        else do
+                            putStr "Digite a linha: "
+                            hFlush stdout
+                            lineInput <- getLine
 
-            case (lineInput, maybeCol) of
-                (l:_, Just c) -> do
-                    case tryMoveSmall board (toUpper l) c player of
-                        Just (newBoard, venceu) -> do
-                            putStrLn "Jogada no tabuleiro menor realizada!"
-                            if venceu
-                                then putStrLn $ "Vitória do jogador " ++ [player] ++ " no tabuleiro menor!"
-                                else return ()
-                            putStrLn "Pressione Enter para retornar ao tabuleiro maior..."
-                            _ <- getLine
-                            return (Just newBoard)
-                        Nothing -> do
-                            putStrLn "--- JOGADA INVÁLIDA! Tente novamente. ---"
-                            gameLoopSmall board player
-                _ -> do
-                    putStrLn "--- ENTRADA INVÁLIDA! Use uma letra e número válidos. ---"
-                    gameLoopSmall board player
+                            putStr "Digite a coluna: "
+                            hFlush stdout
+                            colInput <- getLine
+
+                            let maybeCol = readMaybe colInput :: Maybe Int
+                            case (lineInput, maybeCol) of
+                                (l:_, Just c) ->
+                                    case tryMoveSmall b (toUpper l) c player of
+                                        Just (newBoard, venceu) -> do
+                                            clearScreen
+                                            putStrLn (unlines newBoard)
+                                            if venceu
+                                                then putStrLn $ "\x1F3C6 Vitória do jogador " ++ [player] ++ " no tabuleiro menor!"
+                                                else putStrLn "Jogada no tabuleiro menor realizada!"
+                                            threadDelay 1000000 -- pequena pausa antes de voltar
+                                            return (Just newBoard)
+                                        Nothing -> do
+                                            putStrLn "--- JOGADA INVÁLIDA! Tente novamente. ---"
+                                            threadDelay 1500000
+                                            loop b
+                                _ -> do
+                                    putStrLn "--- ENTRADA INVÁLIDA! Não aperte Enter ---"
+                                    threadDelay 1500000
+                                    loop b
+
+    loop board
+
+-- Função auxiliar para verificar se o tempo acabou
+checkTimeUp :: MVar () -> IO Bool
+checkTimeUp var = not <$> isEmptyMVar var

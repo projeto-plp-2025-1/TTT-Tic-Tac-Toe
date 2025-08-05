@@ -167,7 +167,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
 
                     let currentSmallBoard = smallBoards !! boardIndex
 
-                    maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer
+                    maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer bigBoard
 
                     case maybeNewSmallBoard of
                         Just newBoard -> do
@@ -183,10 +183,12 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                     _ <- getLine
                                     gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2
                         Nothing -> do
-                            putStrLn "\nVocê voltou para o tabuleiro maior sem jogar."
+                            putStrLn "\nTempo esgotado. Passando a vez..."
                             putStrLn "Pressione Enter para continuar..."
                             _ <- getLine
-                            gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2
+                            let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
+                            gameLoop bigBoard smallBoards player1Symbol player2Symbol nextPlayer maybeNextQuadrant name1 name2
+
             _ -> do
                 putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
                 _ <- getLine

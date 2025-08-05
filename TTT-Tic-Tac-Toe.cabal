@@ -73,7 +73,7 @@ library
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.18.3.0, text, containers
+    build-depends:    base ^>=4.18.3.0, text, containers, async >= 2.2, time >= 1.9
 
     -- Directories containing source files.
     hs-source-dirs:   src, app
@@ -101,6 +101,8 @@ executable TTT-Tic-Tac-Toe
         text,
         containers,
         split,
+        async >= 2.2,
+        time >= 1.9,
         process >= 1.6
 
     -- Directories containing source files.
