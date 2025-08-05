@@ -119,19 +119,23 @@ updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
                 updatedBigBoard = replaceAtIndex l updatedLine bigBoard
             in Just updatedBigBoard
 
--- gameLoop: controla a jogabilidade completa entre os tabuleiros
 gameLoop :: [String]       -- tabuleiro maior
          -> [[String]]     -- lista dos 9 tabuleiros menores
          -> Char           -- símbolo do jogador 1
          -> Char           -- símbolo do jogador 2
-         -> Char           -- jogador atual
-         -> Maybe Int      -- quadrante permitido para jogar (Nothing = qualquer quadrante)
+         -> Char           -- jogador atual (símbolo)
+         -> Maybe Int      -- quadrante permitido para jogar
+         -> String         -- nome do jogador 1
+         -> String         -- nome do jogador 2
          -> IO ()
-gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant = do
+gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2 = do
     clearScreen
     putStrLn ""
     putStrLn (unlines bigBoard)
-    putStrLn $ "Turno do Jogador: " ++ [currentPlayer]
+
+    let currentPlayerName = if currentPlayer == player1Symbol then name1 else name2
+    putStrLn $ "Turno de: " ++ currentPlayerName ++ " [" ++ [currentPlayer] ++ "]"
+
     case maybeNextQuadrant of
         Just idx -> putStrLn $ "Você deve jogar no quadrante: " ++ show (idx + 1)
         Nothing  -> putStrLn "Você pode jogar em qualquer quadrante."
@@ -140,54 +144,50 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
     hFlush stdout
     input <- getLine
 
-    -- Sai do jogo se digitar Q
     if not (null input) && toUpper (head input) == 'Q' then
         putStrLn "Obrigado por jogar!"
     else do
-        let maybeIndex = readMaybe input :: Maybe Int
-
+        let maybeIndex = reads input :: [(Int, String)]
         case maybeIndex of
-            Just index -> do
+            [(index, "")] -> do
                 let boardIndex = index - 1
-                if boardIndex < 0 || boardIndex >= length smallBoards
-                    then do
-                        putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
-                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
-                    else if maybeNextQuadrant /= Nothing && maybeNextQuadrant /= Just boardIndex
-                        then do
-                            putStrLn "\nVocê deve jogar no quadrante determinado pelo movimento anterior."
-                            putStrLn "Pressione Enter para continuar..."
-                            _ <- getLine
-                            gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
-                        else do
-                            putStrLn $ "\n--- Acessando o quadrante " ++ show index ++ " ---"
-                            putStrLn "Pressione Enter para continuar..."
-                            _ <- getLine
+                if boardIndex < 0 || boardIndex >= length smallBoards then do
+                    putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
+                    _ <- getLine
+                    gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2
+                else if maybeNextQuadrant /= Nothing && maybeNextQuadrant /= Just boardIndex then do
+                    putStrLn "\nVocê deve jogar no quadrante determinado pelo movimento anterior."
+                    putStrLn "Pressione Enter para continuar..."
+                    _ <- getLine
+                    gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2
+                else do
+                    putStrLn $ "\n--- Acessando o quadrante " ++ show index ++ " ---"
+                    putStrLn "Pressione Enter para continuar..."
+                    _ <- getLine
 
-                            let currentSmallBoard = smallBoards !! boardIndex
+                    let currentSmallBoard = smallBoards !! boardIndex
 
-                            -- Inicia jogada no tabuleiro menor
-                            maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer
+                    maybeNewSmallBoard <- gameLoopSmall currentSmallBoard currentPlayer
 
-                            case maybeNewSmallBoard of
-                                Just newBoard -> do
-                                    let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
-                                    case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
-                                        Just newBigBoard -> do
-                                            let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
-                                            let nextQuadrant = getChangedCellIndex currentSmallBoard newBoard
-                                            gameLoop newBigBoard newSmallBoards player1Symbol player2Symbol nextPlayer nextQuadrant
-                                        Nothing -> do
-                                            putStrLn "Erro: posição já ocupada no tabuleiro maior!"
-                                            putStrLn "Pressione Enter para continuar..."
-                                            _ <- getLine
-                                            gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
+                    case maybeNewSmallBoard of
+                        Just newBoard -> do
+                            let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
+                            case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
+                                Just newBigBoard -> do
+                                    let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
+                                    let nextQuadrant = getChangedCellIndex currentSmallBoard newBoard
+                                    gameLoop newBigBoard newSmallBoards player1Symbol player2Symbol nextPlayer nextQuadrant name1 name2
                                 Nothing -> do
-                                    putStrLn "\nVocê voltou para o tabuleiro maior sem jogar."
+                                    putStrLn "Erro: posição já ocupada no tabuleiro maior!"
                                     putStrLn "Pressione Enter para continuar..."
                                     _ <- getLine
-                                    gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
-
-            Nothing -> do
+                                    gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2
+                        Nothing -> do
+                            putStrLn "\nVocê voltou para o tabuleiro maior sem jogar."
+                            putStrLn "Pressione Enter para continuar..."
+                            _ <- getLine
+                            gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2
+            _ -> do
                 putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
-                gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant
+                _ <- getLine
+                gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2

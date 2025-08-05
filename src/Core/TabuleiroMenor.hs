@@ -125,9 +125,9 @@ smallBoard9Template = [
     ]
 
 smallBoardTemplate1 :: [String]
-smallBoardTemplate1 = smallBoard1Template 
+smallBoardTemplate1 = smallBoard1Template
 smallBoardTemplate2 :: [String]
-smallBoardTemplate2 = smallBoard2Template 
+smallBoardTemplate2 = smallBoard2Template
 smallBoardTemplate3 :: [String]
 smallBoardTemplate3 = smallBoard3Template
 smallBoardTemplate4 :: [String]
