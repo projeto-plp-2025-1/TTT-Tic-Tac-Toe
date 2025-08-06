@@ -3,7 +3,7 @@
 module Core.TabuleiroMaior where
 
 import Utils.Types
-import Interface.Arte (clearScreen)
+import Interface.Arte (clearScreen, exibirVencedor)
 import Data.Char
 import Data.Char (toUpper)
 import System.IO (hFlush, stdout)
@@ -15,6 +15,7 @@ import Core.TabuleiroMenor (gameLoopSmall,
 import qualified Utils.VerificacaoVitoria as VV
 import qualified Core.Persistencia as P
 import qualified Core.Salvamento as S
+import Core.Salvamento (SaveData(winnerBoard))
 
 -- Converte uma entrada (1 a 9) para o índice correspondente (0 a 8)
 getQuadrantIndex :: Int -> Maybe Int
@@ -154,7 +155,6 @@ verificarVitoriaMaior winners jogador =
     in
         any ganhouLinha combinacoes
 
--- Adaptação do gameLoop para incluir WinnerBoard
 gameLoop :: [String]       -- tabuleiro maior
          -> [[String]]     -- lista dos 9 tabuleiros menores
          -> Char           -- símbolo do jogador 1
@@ -171,9 +171,15 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
     putStrLn (unlines bigBoard)
 
     let currentPlayerName = if currentPlayer == player1Symbol then name1 else name2
+
+    -- Ajusta quadrante obrigatório para liberar se já foi vencido
+    let adjustedNextQuadrant = case maybeNextQuadrant of
+            Just idx -> if winnerBoard !! idx /= Nothing then Nothing else Just idx
+            Nothing  -> Nothing
+
     putStrLn $ "Turno de: " ++ currentPlayerName ++ " [" ++ [currentPlayer] ++ "]"
 
-    case maybeNextQuadrant of
+    case adjustedNextQuadrant of
         Just idx -> putStrLn $ "Você deve jogar no quadrante: " ++ show (idx + 1)
         Nothing  -> putStrLn "Você pode jogar em qualquer quadrante."
 
@@ -189,14 +195,14 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                 (player1Symbol, name1)
                                 (player2Symbol, name2)
                                 currentPlayer
-                                maybeNextQuadrant
+                                adjustedNextQuadrant
                                 bigBoard
                                 smallBoards
                                 winnerBoard
             S.salvarJogo saveData
             putStrLn "Jogo salvo com sucesso! Pressione ENTER para continuar."
             _ <- getLine
-            gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2 winnerBoard
+            gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
         _ -> do
             let maybeIndex = reads input :: [(Int, String)]
             case maybeIndex of
@@ -205,12 +211,20 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                     if boardIndex < 0 || boardIndex >= length smallBoards then do
                         putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
                         _ <- getLine
-                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2 winnerBoard
-                    else if maybeNextQuadrant /= Nothing && maybeNextQuadrant /= Just boardIndex then do
+                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
+
+                    else if adjustedNextQuadrant /= Nothing && adjustedNextQuadrant /= Just boardIndex then do
                         putStrLn "\nVocê deve jogar no quadrante determinado pelo movimento anterior."
                         putStrLn "Pressione Enter para continuar..."
                         _ <- getLine
-                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2 winnerBoard
+                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
+
+                    else if winnerBoard !! boardIndex /= Nothing then do
+                        putStrLn "\nEsse quadrante já foi vencido! Escolha outro."
+                        putStrLn "Pressione Enter para continuar..."
+                        _ <- getLine
+                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
+
                     else do
                         putStrLn $ "\n--- Acessando o quadrante " ++ show index ++ " ---"
                         putStrLn "Pressione Enter para continuar..."
@@ -229,7 +243,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                 if verificarVitoriaMaior newWinnerBoard currentPlayer then do
                                     clearScreen
                                     putStrLn (unlines bigBoard)
-                                    putStrLn $ "\n🏆 Parabéns, jogador " ++ [currentPlayer] ++ " venceu o jogo! 🏆"
+                                    exibirVencedor currentPlayerName
                                     P.registrarVitoria currentPlayerName
                                 else
                                     case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
@@ -241,14 +255,14 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                             putStrLn "Erro: posição já ocupada no tabuleiro maior!"
                                             putStrLn "Pressione Enter para continuar..."
                                             _ <- getLine
-                                            gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2 winnerBoard
+                                            gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
                             Nothing -> do
                                 putStrLn "\nTempo esgotado. Passando a vez..."
                                 putStrLn "Pressione Enter para continuar..."
                                 _ <- getLine
                                 let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
-                                gameLoop bigBoard smallBoards player1Symbol player2Symbol nextPlayer maybeNextQuadrant name1 name2 winnerBoard
+                                gameLoop bigBoard smallBoards player1Symbol player2Symbol nextPlayer adjustedNextQuadrant name1 name2 winnerBoard
                 _ -> do
                     putStrLn "\n--- ENTRADA INVÁLIDA! Use um número de 1 a 9. ---"
                     _ <- getLine
-                    gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2 winnerBoard
+                    gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard

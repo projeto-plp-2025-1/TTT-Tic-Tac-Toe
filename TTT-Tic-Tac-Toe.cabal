@@ -63,6 +63,8 @@ library
                       Utils.VerificacaoVitoria
                       Core.TabuleiroMaior
                       Core.TabuleiroMenor
+                      Core.Salvamento
+                      Core.Persistencia
                                           
     -- Modules included in this library but not exported.
     other-modules: Interface.Arte
@@ -73,7 +75,14 @@ library
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.18.3.0, text, containers, async >= 2.2, time >= 1.9, directory >=1.3 && <1.4, split >= 0.2.5
+    build-depends:    
+        base ^>=4.18.3.0,
+        text,
+        containers,
+        time ^>=1.12.2,
+        async ^>=2.2.5,
+        directory,
+        split
 
     -- Directories containing source files.
     hs-source-dirs:   src, app
@@ -101,11 +110,10 @@ executable TTT-Tic-Tac-Toe
         text,
         containers,
         split,
-        async >= 2.2,
-        time >= 1.9,
-        directory >=1.3 && <1.4,
-        split >= 0.2.5,
-        process >= 1.6
+        process ^>=1.6.19.0,
+        directory,
+        time,
+        async
 
     -- Directories containing source files.
     hs-source-dirs:   app, src
