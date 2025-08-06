@@ -3,7 +3,7 @@
 module Core.TabuleiroMaior where
 
 import Utils.Types
-import Interface.Arte (clearScreen, exibirVencedor)
+import Interface.Arte (clearScreen, exibirVencedor, exibirVelha)
 import Data.Char
 import Data.Char (toUpper)
 import System.IO (hFlush, stdout)
@@ -155,6 +155,10 @@ verificarVitoriaMaior winners jogador =
     in
         any ganhouLinha combinacoes
 
+-- Verifica se todos os quadrantes já estão preenchidos e ninguém venceu
+todosQuadrantesFinalizados :: WinnerBoard -> Bool
+todosQuadrantesFinalizados winners = all (/= Nothing) winners
+
 gameLoop :: [String]       -- tabuleiro maior
          -> [[String]]     -- lista dos 9 tabuleiros menores
          -> Char           -- símbolo do jogador 1
@@ -245,6 +249,10 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                     putStrLn (unlines bigBoard)
                                     exibirVencedor currentPlayerName
                                     P.registrarVitoria currentPlayerName
+                                else if todosQuadrantesFinalizados newWinnerBoard then do
+                                    clearScreen
+                                    putStrLn (unlines bigBoard)
+                                    exibirVelha
                                 else
                                     case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
                                         Just newBigBoard -> do
