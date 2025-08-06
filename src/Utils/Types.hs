@@ -11,3 +11,8 @@ data GameState = GameState {
     quadrantStates :: [QuadrantState],
     currentPlayer  :: Player
 }
+
+data Jogador = Jogador {
+    nome :: String,
+    vitorias :: Int
+} deriving (Show, Read)

@@ -15,6 +15,8 @@ import Core.TabuleiroMenor (
     smallBoard4Template, smallBoard5Template, smallBoard6Template,
     smallBoard7Template, smallBoard8Template, smallBoard9Template
     )
+import qualified Core.Persistencia as P
+import qualified Core.Salvamento as S
 
 -- Compatibilidade com Windows e Linux
 setUtf8EncodingCompat :: IO ()
@@ -58,7 +60,8 @@ escolherPersonagem usados = do
                     putStr $ "Deseja um nome personalizado para o personagem [" ++ [s] ++ "]? (pressione Enter para usar '" ++ nomePadrao ++ "'): "
                     hFlush stdout
                     nomeInput <- getLine
-                    let nomeFinal = if null nomeInput then nomePadrao else nomeInput
+                    let nomeBruto = if null nomeInput then nomePadrao else nomeInput
+                    nomeFinal <- P.nomeUnico nomeBruto
                     return (s, nomeFinal)
                 Nothing -> erro
         _ -> erro
@@ -79,30 +82,73 @@ main = do
     opcao <- exibirMenu
     case opcao of
         "1" -> iniciarJogo
-        "2" -> exibirRegras >> main
-        "3" -> sairDoJogo
+        "2" -> continuarJogo
+        "3" -> exibirRegras >> main
+        "4" -> verRanking >> main
+        "5" -> sairDoJogo
         _   -> main
+
+verRanking :: IO ()
+verRanking = do
+    clearScreen
+    putStrLn "==========================="
+    putStrLn "      RANKING TOP 5"
+    putStrLn "===========================\n"
+    ranking <- P.rankingTop5
+    if null ranking
+        then putStrLn "Nenhum jogador registrado ainda.\n"
+        else do
+            mapM_
+              (\(i, jogador) ->
+                  putStrLn $ show i ++ ". " ++ nome jogador ++ " - " ++ show (vitorias jogador) ++ " vitórias")
+              (zip [1..] ranking)
+    putStrLn "\nPressione ENTER para voltar ao menu."
+    _ <- getLine
+    return ()
+
+continuarJogo :: IO ()
+continuarJogo = do
+    jogoSalvo <- S.carregarJogo
+    case jogoSalvo of
+        Nothing -> do
+            putStrLn "Nenhum jogo salvo encontrado."
+            putStrLn "Pressione ENTER para voltar ao menu."
+            _ <- getLine
+            main
+        Just save -> do
+            let nome1 = snd (S.jogador1 save)
+            let nome2 = snd (S.jogador2 save)
+            let simbolo1 = fst (S.jogador1 save)
+            let simbolo2 = fst (S.jogador2 save)
+            let vez = S.vezAtual save
+            let quad = S.quadrante save
+            let bigBoard = S.bigBoard save
+            let miniBoards = S.smallBoards save
+            let winnerBoard = S.winnerBoard save
+
+            putStrLn $ "Jogo salvo entre " ++ nome1 ++ " e " ++ nome2 ++ " carregado com sucesso!"
+            putStrLn "Pressione ENTER para continuar o jogo..."
+            _ <- getLine
+
+            gameLoop bigBoard miniBoards simbolo1 simbolo2 vez quad nome1 nome2 winnerBoard
 
 -- Início do jogo com personagens personalizados
 iniciarJogo :: IO ()
 iniciarJogo = do
     putStrLn "JOGADOR 1"
     (symbol1, name1) <- escolherPersonagem []
+    P.criarConta name1
     putStrLn $ "Jogador 1 escolheu: [" ++ [symbol1] ++ "] " ++ name1
 
     putStrLn "\nJOGADOR 2"
     (symbol2, name2) <- escolherPersonagem [getId symbol1]
-    if map toUpper name2 == map toUpper name1
-        then do
-            putStrLn "Nome já utilizado. Escolha outro nome para o Jogador 2."
-            iniciarJogo
-        else do
-            putStrLn $ "Jogador 2 escolheu: [" ++ [symbol2] ++ "] " ++ name2
+    P.criarConta name2
+    putStrLn $ "Jogador 2 escolheu: [" ++ [symbol2] ++ "] " ++ name2
 
-            putStrLn "\nPressione Enter para começar..."
-            _ <- getLine
+    putStrLn "\nPressione Enter para começar..."
+    _ <- getLine
 
-            let initialBoard = -- Template do tabuleiro maior
+    let initialBoard = -- Template do tabuleiro maior
                         [
                         "    1    2    3     4    5    6     7    8    9",
                         "                                                ",
@@ -129,15 +175,15 @@ iniciarJogo = do
                         "                                                "
                         ]
 
-            let initialSmallBoards =
+    let initialSmallBoards =
                     [ smallBoard1Template, smallBoard2Template, smallBoard3Template
                     , smallBoard4Template, smallBoard5Template, smallBoard6Template
                     , smallBoard7Template, smallBoard8Template, smallBoard9Template
                     ]
 
-            let winnerBoard = inicializaWinnerBoard
+    let winnerBoard = inicializaWinnerBoard
 
-            gameLoop initialBoard initialSmallBoards symbol1 symbol2 symbol1 Nothing name1 name2 winnerBoard
+    gameLoop initialBoard initialSmallBoards symbol1 symbol2 symbol1 Nothing name1 name2 winnerBoard
 
 -- Função auxiliar: obter o ID de um símbolo (para evitar repetição)
 getId :: Char -> Int
