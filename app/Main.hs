@@ -132,7 +132,7 @@ continuarJogo = do
             putStrLn $ "Jogo salvo entre " ++ nome1 ++ " e " ++ nome2 ++ " carregado com sucesso!"
             putStrLn "Pressione ENTER para continuar o jogo..."
             _ <- getLine
-
+            
             gameLoop bigBoard miniBoards simbolo1 simbolo2 vez quad nome1 nome2 winnerBoard
 
 -- Início do jogo com personagens personalizados

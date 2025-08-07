@@ -1,17 +1,12 @@
 module Core.TabuleiroMenor where
 
-import Utils.Types
 import Interface.Arte (clearScreen)
 import Data.Char (toUpper)
 import System.IO (hFlush, stdout)
 import Text.Read (readMaybe)
-import Control.Concurrent (forkIO, threadDelay, killThread)
-import Control.Concurrent.MVar
-import Control.Concurrent.Async
-import Data.Time.Clock
-import Control.Concurrent (threadDelay)
-import Control.Concurrent.Async (async, cancel, race)
-import System.IO (hFlush, stdout)
+import Control.Concurrent (forkIO, threadDelay)
+import Control.Concurrent.MVar ( isEmptyMVar, newEmptyMVar, putMVar, MVar )
+import Data.Time.Clock ( diffUTCTime, getCurrentTime )
 import Utils.VerificacaoVitoria (verificarVitoria)
 
 smallBoard1Template :: [String]

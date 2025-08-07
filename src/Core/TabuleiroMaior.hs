@@ -2,12 +2,9 @@
 {-# HLINT ignore "Use lambda-case" #-}
 module Core.TabuleiroMaior where
 
-import Utils.Types
 import Interface.Arte (clearScreen, exibirVencedor, exibirVelha)
-import Data.Char
-import Data.Char (toUpper)
+import Data.Char (toLower)  
 import System.IO (hFlush, stdout)
-import Text.Read (readMaybe)
 import Core.TabuleiroMenor (gameLoopSmall,
                             smallBoard1Template, smallBoard2Template, smallBoard3Template,
                             smallBoard4Template, smallBoard5Template, smallBoard6Template,
@@ -15,7 +12,6 @@ import Core.TabuleiroMenor (gameLoopSmall,
 import qualified Utils.VerificacaoVitoria as VV
 import qualified Core.Persistencia as P
 import qualified Core.Salvamento as S
-import Core.Salvamento (SaveData(winnerBoard))
 
 -- Converte uma entrada (1 a 9) para o índice correspondente (0 a 8)
 getQuadrantIndex :: Int -> Maybe Int

@@ -3,8 +3,6 @@ module Core.Salvamento where
 import System.Directory (createDirectoryIfMissing, doesFileExist)
 import System.IO (withFile, IOMode(..), hPutStrLn, hGetContents)
 import Data.List.Split (splitOn)
-import Data.Maybe (fromMaybe)
-import Utils.Types (Jogador(..))
 import Data.Char (toUpper)
 
 -- Dados do jogo salvos
@@ -21,16 +19,18 @@ salvarJogo saveData = do
         hPutStrLn h $ "winnerBoard;" ++ serializeWinnerBoard (winnerBoard saveData)
         hPutStrLn h $ "tabuleiroMaior;" ++ serializeLines (bigBoard saveData)
         hPutStrLn h $ "tabuleiroMenores;" ++ serializeMiniBoards (smallBoards saveData)
+    -- garantir fechamento
 
 -- Carregar jogo
 carregarJogo :: IO (Maybe SaveData)
 carregarJogo = do
     existe <- doesFileExist "dados/salvo.txt"
-    if not existe then return Nothing else do
-        conteudo <- readFile "dados/salvo.txt"
-        let ls = lines conteudo
-        return $ parseSaveData ls
-
+    if not existe then return Nothing else
+        withFile "dados/salvo.txt" ReadMode $ \h -> do
+            conteudo <- hGetContents h
+            -- Força a leitura completa antes de fechar
+            length conteudo `seq` return (parseSaveData (lines conteudo))
+        
 -- Estrutura dos dados salvos
 data SaveData = SaveData {
     jogador1     :: (Char, String),
