@@ -5,7 +5,7 @@ import GHC.IO.Encoding (setLocaleEncoding, utf8)
 import System.Info (os)
 import Utils.Types
 import System.IO (hFlush, stdout)
-import Data.Char (toUpper)
+import Data.Char (toUpper, isSpace)
 import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
@@ -60,9 +60,12 @@ escolherPersonagem usados = do
                     putStr $ "Deseja um nome personalizado para o personagem [" ++ [s] ++ "]? (pressione Enter para usar '" ++ nomePadrao ++ "'): "
                     hFlush stdout
                     nomeInput <- getLine
-                    let nomeBruto = if null nomeInput then nomePadrao else nomeInput
-                    nomeFinal <- P.nomeUnico nomeBruto
-                    return (s, nomeFinal)
+                    if all isSpace nomeInput
+                        then do
+                            nomeFinal <- P.nomeUnico nomePadrao
+                            return (s, nomeFinal)
+                        else
+                            return (s, trim nomeInput)
                 Nothing -> erro
         _ -> erro
   where
@@ -190,6 +193,11 @@ getId :: Char -> Int
 getId c = case lookup c (map (\(i, s, _) -> (s, i)) personagens) of
     Just i -> i
     Nothing -> -1
+
+-- Função auxiliar: limpar espaços " abc " -> abc
+trim :: String -> String
+trim = f . f
+    where f = reverse . dropWhile isSpace
 
 -- Sair do jogo
 sairDoJogo :: IO ()
