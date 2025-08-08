@@ -41,6 +41,7 @@ exibirVencedor nomeVencedor = do
     putStrLn "                                                                                                                                                  "  
     putStrLn $ "                               🏆 Parabéns, " ++ nomeVencedor ++ "! Você venceu a partida.                                                        "                                                       
 
+
 -- Exibe a tela da Velha.
 exibirVelha :: IO() 
 exibirVelha = do

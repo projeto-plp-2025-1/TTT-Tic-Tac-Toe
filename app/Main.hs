@@ -5,7 +5,7 @@ import GHC.IO.Encoding (setLocaleEncoding, utf8)
 import System.Info (os)
 import Utils.Types
 import System.IO (hFlush, stdout)
-import Data.Char (toUpper, isSpace)
+import Data.Char (toUpper)
 import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
@@ -60,12 +60,9 @@ escolherPersonagem usados = do
                     putStr $ "Deseja um nome personalizado para o personagem [" ++ [s] ++ "]? (pressione Enter para usar '" ++ nomePadrao ++ "'): "
                     hFlush stdout
                     nomeInput <- getLine
-                    if all isSpace nomeInput
-                        then do
-                            nomeFinal <- P.nomeUnico nomePadrao
-                            return (s, nomeFinal)
-                        else
-                            return (s, trim nomeInput)
+                    let nomeBruto = if null nomeInput then nomePadrao else nomeInput
+                    nomeFinal <- P.nomeUnico nomeBruto
+                    return (s, nomeFinal)
                 Nothing -> erro
         _ -> erro
   where
@@ -84,7 +81,7 @@ main = do
     clearScreen
     opcao <- exibirMenu
     case opcao of
-        "1" -> iniciarJogo
+        "1" -> escolherTipoDeJogo
         "2" -> continuarJogo
         "3" -> exibirRegras >> main
         "4" -> verRanking >> main
@@ -132,25 +129,62 @@ continuarJogo = do
             putStrLn $ "Jogo salvo entre " ++ nome1 ++ " e " ++ nome2 ++ " carregado com sucesso!"
             putStrLn "Pressione ENTER para continuar o jogo..."
             _ <- getLine
-            
+
             gameLoop bigBoard miniBoards simbolo1 simbolo2 vez quad nome1 nome2 winnerBoard
+
+
+escolherTipoDeJogo :: IO ()
+escolherTipoDeJogo = do
+    putStrLn "\nEscolha o modo de jogo:"
+    putStrLn "1 -> Multiplayer (2 jogadores locais)"
+    putStrLn "2 -> Contra o bot (singleplayer)"
+    putStr "→ "
+    hFlush stdout
+    escolha <- getLine
+    case escolha of
+        "1" -> iniciarJogo
+        "2" -> iniciarJogoContraBot
+        _   -> do
+            putStrLn "Opção inválida! Tente novamente."
+            escolherTipoDeJogo
 
 -- Início do jogo com personagens personalizados
 iniciarJogo :: IO ()
 iniciarJogo = do
     putStrLn "JOGADOR 1"
-    (symbol1, name1) <- escolherPersonagem []
-    P.criarConta name1
-    putStrLn $ "Jogador 1 escolheu: [" ++ [symbol1] ++ "] " ++ name1
+    jogador1 <- escolherPersonagem []
+    P.criarConta (snd jogador1)
+    putStrLn $ "Jogador 1 escolheu: [" ++ [fst jogador1] ++ "] " ++ snd jogador1
 
     putStrLn "\nJOGADOR 2"
-    (symbol2, name2) <- escolherPersonagem [getId symbol1]
-    P.criarConta name2
-    putStrLn $ "Jogador 2 escolheu: [" ++ [symbol2] ++ "] " ++ name2
+    jogador2 <- escolherPersonagem [getId (fst jogador1)]
+    P.criarConta (snd jogador2)
+    putStrLn $ "Jogador 2 escolheu: [" ++ [fst jogador2] ++ "] " ++ snd jogador2
 
     putStrLn "\nPressione Enter para começar..."
     _ <- getLine
 
+    iniciarPartida jogador1 jogador2
+
+iniciarJogoContraBot :: IO ()
+iniciarJogoContraBot = do
+    putStrLn "VOCÊ"
+    jogador1@(symbol1, name1) <- escolherPersonagem []
+    P.criarConta name1
+    putStrLn $ "Você escolheu: [" ++ [symbol1] ++ "] " ++ name1
+
+    let symbol2 = head [s | (i, s, _) <- personagens, s /= symbol1]
+    let name2 = "Bot"
+    let jogador2 = (symbol2, name2)
+
+    putStrLn $ "\nO bot jogará com: [" ++ [symbol2] ++ "] " ++ name2
+    putStrLn "\nPressione Enter para começar..."
+    _ <- getLine
+
+    iniciarPartida jogador1 jogador2
+
+iniciarPartida :: (Char, String) -> (Char, String) -> IO ()
+iniciarPartida (symbol1, name1) (symbol2, name2) = do
     let initialBoard = -- Template do tabuleiro maior
                         [
                         "    1    2    3     4    5    6     7    8    9",
@@ -188,16 +222,12 @@ iniciarJogo = do
 
     gameLoop initialBoard initialSmallBoards symbol1 symbol2 symbol1 Nothing name1 name2 winnerBoard
 
+
 -- Função auxiliar: obter o ID de um símbolo (para evitar repetição)
 getId :: Char -> Int
 getId c = case lookup c (map (\(i, s, _) -> (s, i)) personagens) of
     Just i -> i
     Nothing -> -1
-
--- Função auxiliar: limpar espaços " abc " -> abc
-trim :: String -> String
-trim = f . f
-    where f = reverse . dropWhile isSpace
 
 -- Sair do jogo
 sairDoJogo :: IO ()

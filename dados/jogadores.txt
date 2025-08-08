@@ -1,3 +1,22 @@
+Jogador {nome = "TREVO3", vitorias = 0}
+Jogador {nome = "E-COMERCIAL", vitorias = 0}
+Jogador {nome = "DELTA4", vitorias = 0}
+Jogador {nome = "TREVO2", vitorias = 0}
+Jogador {nome = "TREVO1", vitorias = 0}
+Jogador {nome = "TREVO", vitorias = 0}
+Jogador {nome = "DELTA3", vitorias = 0}
+Jogador {nome = "BEIRAMAR", vitorias = 1}
+Jogador {nome = "DELTA2", vitorias = 0}
+Jogador {nome = "BOLA4", vitorias = 0}
+Jogador {nome = "BOLA3", vitorias = 0}
+Jogador {nome = "XIS5", vitorias = 0}
+Jogador {nome = "XIS4", vitorias = 0}
+Jogador {nome = "XIS3", vitorias = 0}
+Jogador {nome = "BOLA2", vitorias = 0}
+Jogador {nome = "CERQUINHA2", vitorias = 0}
+Jogador {nome = "XIS2", vitorias = 0}
+Jogador {nome = "BOLA1", vitorias = 0}
+Jogador {nome = "XIS1", vitorias = 0}
 Jogador {nome = "SORRISO", vitorias = 1}
 Jogador {nome = "CERQUINHA1", vitorias = 6}
 Jogador {nome = "DELTA1", vitorias = 5}
@@ -6,3 +25,4 @@ Jogador {nome = "DELTA", vitorias = 0}
 Jogador {nome = "XIS", vitorias = 8}
 Jogador {nome = "ARROBA", vitorias = 2}
 Jogador {nome = "BOLA", vitorias = 4}
+Jogador {nome = "Bot", vitorias = 1}

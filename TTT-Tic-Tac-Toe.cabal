@@ -83,7 +83,8 @@ library
         time ^>=1.12.2,
         async ^>=2.2.5,
         directory,
-        split
+        split,
+        random
 
     -- Directories containing source files.
     hs-source-dirs:   src, app
@@ -114,7 +115,8 @@ executable TTT-Tic-Tac-Toe
         process ^>=1.6.19.0,
         directory,
         time,
-        async
+        async,
+        random
 
     -- Directories containing source files.
     hs-source-dirs:   app, src
