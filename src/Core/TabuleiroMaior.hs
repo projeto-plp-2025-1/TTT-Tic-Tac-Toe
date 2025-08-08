@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use lambda-case" #-}
+{-# LANGUAGE LambdaCase #-}
 module Core.TabuleiroMaior where
 
 import Interface.Arte (clearScreen, exibirVencedor, exibirVelha)
@@ -12,6 +13,8 @@ import Core.TabuleiroMenor (gameLoopSmall,
 import qualified Utils.VerificacaoVitoria as VV
 import qualified Core.Persistencia as P
 import qualified Core.Salvamento as S
+import qualified Utils.Types as Type
+import Utils.Types (SmallBoardState, QuadrantState (..))
 
 -- Converte uma entrada (1 a 9) para o índice correspondente (0 a 8)
 getQuadrantIndex :: Int -> Maybe Int
@@ -120,40 +123,54 @@ updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
                 updatedBigBoard = replaceAtIndex l updatedLine bigBoard
             in Just updatedBigBoard
 
--- Inicializa lista de vencedores dos tabuleiros menores (Nothing = sem vencedor)
-type WinnerBoard = [Maybe Char]
-
-inicializaWinnerBoard :: WinnerBoard
-inicializaWinnerBoard = replicate 9 Nothing
-
 -- Atualiza vencedor de um quadrante, se houve vitória naquele quadrante
-atualizaWinnerBoard :: WinnerBoard -> Int -> [String] -> Char -> WinnerBoard
+atualizaWinnerBoard :: SmallBoardState -> Int -> [String] -> Char -> SmallBoardState
 atualizaWinnerBoard winners idx smallBoard jogador =
     if VV.verificarVitoria smallBoard jogador
-       then replaceAtIndex idx (Just jogador) winners
+       then replaceAtIndex idx (Winner jogador) winners
        else winners
 
--- Verifica se jogador venceu o tabuleiro maior com base na lista de vencedores
-verificarVitoriaMaior :: WinnerBoard -> Char -> Bool
+atualizaDrawBoard :: SmallBoardState -> Int -> [String] -> SmallBoardState
+atualizaDrawBoard winners idx smallBoard =
+    if verificarDraw smallBoard && winners !! idx == InProgress
+       then replaceAtIndex idx Draw winners
+       else winners
+
+verificarDraw :: [String] -> Bool
+verificarDraw board = 
+    all (posicaoDraw board) [(2,5), (2,10), (2,14), (4,5), (4,10), (4,14), (6,5), (6,10), (6,14)]
+
+posicaoDraw :: [String] -> (Int, Int) -> Bool
+posicaoDraw board (linha, coluna) =
+    (board !! linha) !! coluna /= ' '
+
+
+verificarVitoriaMaior :: [QuadrantState] -> Char -> Bool
 verificarVitoriaMaior winners jogador =
     let
         combinacoes =
-            [ [0,1,2]
-            , [3,4,5]
-            , [6,7,8]
-            , [0,3,6]
-            , [1,4,7]
-            , [2,5,8]
-            , [0,4,8]
-            , [2,4,6]
+            [ [0,1,2]  -- Linha superior
+            , [3,4,5]  -- Linha do meio
+            , [6,7,8]  -- Linha inferior
+            , [0,3,6]  -- Coluna esquerda
+            , [1,4,7]  -- Coluna do meio
+            , [2,5,8]  -- Coluna direita
+            , [0,4,8]  -- Diagonal principal
+            , [2,4,6]  -- Diagonal secundária
             ]
-        ganhouLinha line = all (\i -> winners !! i == Just jogador) line
+        ganhouLinha line = all (\i -> 
+            case 
+                winners !! i of
+                Winner c -> c == jogador
+                _ -> False) line
     in
         any ganhouLinha combinacoes
 
--- Verifica se todos os quadrantes já estão preenchidos e ninguém venceu
-todosQuadrantesFinalizados :: WinnerBoard -> Bool
-todosQuadrantesFinalizados winners = all (/= Nothing) winners
+todosQuadrantesFinalizados :: [QuadrantState] -> Bool
+todosQuadrantesFinalizados = all $ \case
+    InProgress -> False
+    Draw -> True
+    Winner _ -> True
 
 gameLoop :: [String]       -- tabuleiro maior
          -> [[String]]     -- lista dos 9 tabuleiros menores
@@ -163,7 +180,7 @@ gameLoop :: [String]       -- tabuleiro maior
          -> Maybe Int      -- quadrante permitido para jogar
          -> String         -- nome do jogador 1
          -> String         -- nome do jogador 2
-         -> WinnerBoard    -- lista de vencedores dos tabuleiros menores
+         -> SmallBoardState    -- lista de vencedores dos tabuleiros menores
          -> IO ()
 gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNextQuadrant name1 name2 winnerBoard = do
     clearScreen
@@ -174,7 +191,9 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
 
     -- Ajusta quadrante obrigatório para liberar se já foi vencido
     let adjustedNextQuadrant = case maybeNextQuadrant of
-            Just idx -> if winnerBoard !! idx /= Nothing then Nothing else Just idx
+            Just idx -> case winnerBoard !! idx of
+                     InProgress -> Just idx  
+                     _ -> Nothing          
             Nothing  -> Nothing
 
     putStrLn $ "Turno de: " ++ currentPlayerName ++ " [" ++ [currentPlayer] ++ "]"
@@ -191,15 +210,15 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
     case map toLower input of
         "q" -> putStrLn "Obrigado por jogar!"
         "salvar" -> do
-            let saveData = S.SaveData
-                                (player1Symbol, name1)
-                                (player2Symbol, name2)
-                                currentPlayer
-                                adjustedNextQuadrant
-                                bigBoard
-                                smallBoards
-                                winnerBoard
-            S.salvarJogo saveData
+            let gameState = Type.GameState
+                    (player1Symbol, name1)
+                    (player2Symbol, name2)
+                    currentPlayer
+                    adjustedNextQuadrant
+                    bigBoard
+                    smallBoards
+                    winnerBoard
+            S.salvarJogo gameState
             putStrLn "Jogo salvo com sucesso! Pressione ENTER para continuar."
             _ <- getLine
             gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
@@ -219,12 +238,20 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                         _ <- getLine
                         gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
 
-                    else if winnerBoard !! boardIndex /= Nothing then do
-                        putStrLn "\nEsse quadrante já foi vencido! Escolha outro."
+                    else if winnerBoard !! boardIndex == Draw then do
+                        putStrLn "\nEsse quadrante já está cheio! Escolha outro."
                         putStrLn "Pressione Enter para continuar..."
                         _ <- getLine
                         gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
 
+                    else if case winnerBoard !! boardIndex of
+                            InProgress -> False
+                            _ -> True then do
+                        putStrLn "\nEsse quadrante já foi vencido! Escolha outro."
+                        putStrLn "Pressione Enter para continuar..."
+                        _ <- getLine
+                        gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 winnerBoard
+                    
                     else do
                         putStrLn $ "\n--- Acessando o quadrante " ++ show index ++ " ---"
                         putStrLn "Pressione Enter para continuar..."
@@ -238,7 +265,8 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                             Just newBoard -> do
                                 let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
 
-                                let newWinnerBoard = atualizaWinnerBoard winnerBoard boardIndex newBoard currentPlayer
+                                let drawWinnerBoard = atualizaDrawBoard winnerBoard boardIndex newBoard
+                                let newWinnerBoard = atualizaWinnerBoard drawWinnerBoard boardIndex newBoard currentPlayer
 
                                 if verificarVitoriaMaior newWinnerBoard currentPlayer then do
                                     clearScreen

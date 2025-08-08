@@ -4,11 +4,10 @@ import System.Directory (createDirectoryIfMissing, doesFileExist)
 import System.IO (withFile, IOMode(..), hPutStrLn, hGetContents)
 import Data.List.Split (splitOn)
 import Data.Char (toUpper)
-
--- Dados do jogo salvos
+import Utils.Types (QuadrantState(..), SmallBoardState, GameState(..), inicializaWinnerBoard)
 
 -- Salvar jogo
-salvarJogo :: SaveData -> IO ()
+salvarJogo :: GameState -> IO ()
 salvarJogo saveData = do
     createDirectoryIfMissing True "dados"
     withFile "dados/salvo.txt" WriteMode $ \h -> do
@@ -16,13 +15,12 @@ salvarJogo saveData = do
         hPutStrLn h $ "jogador2;" ++ [fst $ jogador2 saveData] ++ ";" ++ snd (jogador2 saveData)
         hPutStrLn h $ "vez;" ++ [vezAtual saveData]
         hPutStrLn h $ "quadrantePermitido;" ++ maybe "None" show (quadrante saveData)
-        hPutStrLn h $ "winnerBoard;" ++ serializeWinnerBoard (winnerBoard saveData)
+        hPutStrLn h $ "winnerBoard;" ++ concatMap serializeWinnerBoard (winnerBoard saveData)
         hPutStrLn h $ "tabuleiroMaior;" ++ serializeLines (bigBoard saveData)
         hPutStrLn h $ "tabuleiroMenores;" ++ serializeMiniBoards (smallBoards saveData)
-    -- garantir fechamento
 
 -- Carregar jogo
-carregarJogo :: IO (Maybe SaveData)
+carregarJogo :: IO (Maybe GameState)
 carregarJogo = do
     existe <- doesFileExist "dados/salvo.txt"
     if not existe then return Nothing else
@@ -31,17 +29,6 @@ carregarJogo = do
             -- Força a leitura completa antes de fechar
             length conteudo `seq` return (parseSaveData (lines conteudo))
         
--- Estrutura dos dados salvos
-data SaveData = SaveData {
-    jogador1     :: (Char, String),
-    jogador2     :: (Char, String),
-    vezAtual     :: Char,
-    quadrante    :: Maybe Int,
-    bigBoard     :: [String],
-    smallBoards  :: [[String]],
-    winnerBoard  :: [Maybe Char]
-} deriving Show
-
 -- Serializadores auxiliares
 serializeLines :: [String] -> String
 serializeLines = concat . map (++ "|")
@@ -49,14 +36,15 @@ serializeLines = concat . map (++ "|")
 serializeMiniBoards :: [[String]] -> String
 serializeMiniBoards = concat . map (\b -> serializeLines b ++ "::")
 
-serializeWinnerBoard :: [Maybe Char] -> String
-serializeWinnerBoard = concat . map format
+serializeWinnerBoard :: QuadrantState -> String
+serializeWinnerBoard = format
   where
-    format Nothing  = "Nothing,"
-    format (Just c) = "Just " ++ [c] ++ ","
-
+    format InProgress  = "InProgress,"
+    format Draw        = "Draw,"
+    format (Winner c)  = "Winner " ++ [c] ++ ","
+    
 -- Desserializadores
-parseSaveData :: [String] -> Maybe SaveData
+parseSaveData :: [String] -> Maybe GameState
 parseSaveData ls = do
     j1Line <- lookupLine "jogador1" ls
     j2Line <- lookupLine "jogador2" ls
@@ -74,7 +62,7 @@ parseSaveData ls = do
     let big = splitOn "|" bigLine
     let minis = map (splitOn "|") (init $ splitOn "::" miniLine)
 
-    return $ SaveData j1 j2 vez quad (init big) minis winner
+    return $ GameState j1 j2 vez quad (init big) minis winner
 
 lookupLine :: String -> [String] -> Maybe String
 lookupLine prefix ls = case filter (prefix `startsWith`) ls of
@@ -89,8 +77,12 @@ parseJogador s = case splitOn ";" s of
     [c,n] -> (head c, n)
     _     -> ('?', "")
 
-parseWinnerBoard :: String -> [Maybe Char]
-parseWinnerBoard = map parseItem . filter (/= "") . splitOn ","
+parseWinnerBoard :: String -> [QuadrantState]
+parseWinnerBoard input = 
+    case filter (/= "") (splitOn "," input) of
+        [] -> inicializaWinnerBoard
+        items -> map parseItem items
   where
-    parseItem "Nothing" = Nothing
-    parseItem str       = Just (last str)
+    parseItem "Draw" = Draw
+    parseItem ['W','i','n','n','e','r',' ',c] = Winner c
+    parseItem _ = InProgress

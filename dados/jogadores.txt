@@ -1,3 +1,5 @@
+Jogador {nome = "Big O", vitorias = 0}
+Jogador {nome = "X-Man", vitorias = 0}
 Jogador {nome = "SORRISO", vitorias = 1}
 Jogador {nome = "CERQUINHA1", vitorias = 6}
 Jogador {nome = "DELTA1", vitorias = 5}

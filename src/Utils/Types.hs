@@ -13,13 +13,19 @@ data Jogador = Jogador {
 data QuadrantState = InProgress | Winner Char | Draw
   deriving (Show, Eq)
 
-data GameState = GameState
-  { jogador1         :: (Char, String),
-    jogador2         :: (Char, String),
-    vezAtual   :: Char,
-    quadrante    :: Maybe Int,
-    bigBoard           :: [String],
-    smallBoards :: [[String]],
-    winnerBoard  :: [Maybe Char]
-  } deriving Show
+-- Status de small board (9 quadrantes)
+type SmallBoardState = [QuadrantState]
 
+-- Inicializa todos os quadrantes como "InProgress"
+inicializaWinnerBoard :: [QuadrantState]
+inicializaWinnerBoard = replicate 9 InProgress
+
+data GameState = GameState{ 
+    jogador1     :: (Char, String),
+    jogador2     :: (Char, String),
+    vezAtual     :: Char,
+    quadrante    :: Maybe Int,
+    bigBoard     :: [String],
+    smallBoards  :: [[String]],
+    winnerBoard  :: SmallBoardState
+  } deriving Show
