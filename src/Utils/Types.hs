@@ -1,10 +1,5 @@
 module Utils.Types where
 
---data Player = char | notingh deriving (Show, Eq)
---type Cell = Maybe Player
---type MiniBoard = [[Cell]]
---type GameBoard = [[MiniBoard]]
-
 data Jogador = Jogador {
     nome :: String,
     vitorias :: Int
@@ -22,7 +17,9 @@ inicializaWinnerBoard = replicate 9 InProgress
 
 data GameState = GameState{ 
     jogador1     :: (Char, String),
+    j1SmallWin :: Int,
     jogador2     :: (Char, String),
+    j2SmallWin :: Int,
     vezAtual     :: Char,
     quadrante    :: Maybe Int,
     bigBoard     :: [String],

@@ -235,11 +235,11 @@ gameLoopSmall board player bigBoard = do
                             putStrLn "\n\x23F0 Tempo esgotado! Passando a vez..."
                             return Nothing
                         else do
-                            putStr "Digite a linha: "
+                            putStr "Digite a linha (A-I): "
                             hFlush stdout
                             lineInput <- getLine
 
-                            putStr "Digite a coluna: "
+                            putStr "Digite a coluna (1-9): "
                             hFlush stdout
                             colInput <- getLine
 

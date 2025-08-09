@@ -12,7 +12,9 @@ salvarJogo saveData = do
     createDirectoryIfMissing True "dados"
     withFile "dados/salvo.txt" WriteMode $ \h -> do
         hPutStrLn h $ "jogador1;" ++ [fst $ jogador1 saveData] ++ ";" ++ snd (jogador1 saveData)
+        hPutStrLn h $ "j1SmallWin;" ++ show (j1SmallWin saveData)
         hPutStrLn h $ "jogador2;" ++ [fst $ jogador2 saveData] ++ ";" ++ snd (jogador2 saveData)
+        hPutStrLn h $ "j2SmallWin;" ++ show (j2SmallWin saveData)
         hPutStrLn h $ "vez;" ++ [vezAtual saveData]
         hPutStrLn h $ "quadrantePermitido;" ++ maybe "None" show (quadrante saveData)
         hPutStrLn h $ "winnerBoard;" ++ concatMap serializeWinnerBoard (winnerBoard saveData)
@@ -26,7 +28,6 @@ carregarJogo = do
     if not existe then return Nothing else
         withFile "dados/salvo.txt" ReadMode $ \h -> do
             conteudo <- hGetContents h
-            -- Força a leitura completa antes de fechar
             length conteudo `seq` return (parseSaveData (lines conteudo))
         
 -- Serializadores auxiliares
@@ -47,7 +48,9 @@ serializeWinnerBoard = format
 parseSaveData :: [String] -> Maybe GameState
 parseSaveData ls = do
     j1Line <- lookupLine "jogador1" ls
+    j1WinLine <- lookupLine "j1SmallWin" ls
     j2Line <- lookupLine "jogador2" ls
+    j2WinLine <- lookupLine "j2SmallWin" ls
     vezLine <- lookupLine "vez" ls
     quadLine <- lookupLine "quadrantePermitido" ls
     winnerLine <- lookupLine "winnerBoard" ls
@@ -55,14 +58,22 @@ parseSaveData ls = do
     miniLine <- lookupLine "tabuleiroMenores" ls
 
     let j1 = parseJogador j1Line
-    let j2 = parseJogador j2Line
-    let vez = head vezLine
-    let quad = if quadLine == "None" then Nothing else Just (read quadLine)
-    let winner = parseWinnerBoard winnerLine
-    let big = splitOn "|" bigLine
-    let minis = map (splitOn "|") (init $ splitOn "::" miniLine)
-
-    return $ GameState j1 j2 vez quad (init big) minis winner
+        j2 = parseJogador j2Line
+        vez = head vezLine
+        quad = if quadLine == "None" then Nothing else Just (read quadLine)
+        winner = parseWinnerBoard winnerLine
+        big = splitOn "|" bigLine
+        minis = map (splitOn "|") (init $ splitOn "::" miniLine)
+        
+    j1SmallWin <- safeRead j1WinLine
+    j2SmallWin <- safeRead j2WinLine
+    
+    return $ GameState j1 j1SmallWin j2 j2SmallWin vez quad (init big) minis winner
+  where
+    safeRead :: String -> Maybe Int
+    safeRead s = case reads s of
+                  [(x, "")] -> Just x
+                  _ -> Nothing
 
 lookupLine :: String -> [String] -> Maybe String
 lookupLine prefix ls = case filter (prefix `startsWith`) ls of

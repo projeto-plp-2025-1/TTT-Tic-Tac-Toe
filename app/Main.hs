@@ -51,23 +51,40 @@ escolherPersonagem :: [Int] -> IO (Char, String)
 escolherPersonagem usados = do
     let disponiveis = filter (\(i, _, _) -> i `notElem` usados) personagens
     mostrarPersonagens disponiveis
-    putStr "Digite o número do personagem desejado: "
+    
+    putStr "Digite o número do personagem desejado (ou Enter para X/O): "
     hFlush stdout
     input <- getLine
-    case reads input :: [(Int, String)] of
-        [(num, "")] ->
-            case lookupPersonagem num disponiveis of
-                Just (s, nomePadrao) -> do
-                    putStr $ "Deseja um nome personalizado para o personagem [" ++ [s] ++ "]? (pressione Enter para usar '" ++ nomePadrao ++ "'): "
-                    hFlush stdout
-                    nomeInput <- getLine
-                    let nomeBruto = if null nomeInput then nomePadrao else nomeInput
-                    nomeFinal <- P.nomeUnico nomeBruto
-                    return (s, nomeFinal)
+    
+    case input of
+        "" -> do  -- Quando o usuário pressiona Enter
+            let defaultSymbols = ['X', 'O']
+                availableSymbols = [s | (_, s, _) <- disponiveis]
+                symbol = head $ filter (`elem` availableSymbols) defaultSymbols
+                
+            case lookupSymbol symbol disponiveis of
+                Just (s, nomePadrao) -> getPlayerName s nomePadrao
                 Nothing -> erro
-        _ -> erro
+                
+        _ -> case reads input :: [(Int, String)] of
+            [(num, "")] ->
+                case lookupPersonagem num disponiveis of
+                Just (s, nomePadrao) -> getPlayerName s nomePadrao
+                Nothing -> erro
+            _ -> erro
   where
+    -- Função auxiliar para obter o nome do jogador
+    getPlayerName :: Char -> String -> IO (Char, String)
+    getPlayerName s nomePadrao = do
+        putStr $ "Deseja um nome personalizado para o personagem [" ++ [s] ++ "]? (pressione Enter para usar '" ++ nomePadrao ++ "'): "
+        hFlush stdout
+        nomeInput <- getLine
+        let nomeBruto = if null nomeInput then nomePadrao else nomeInput
+        nomeFinal <- P.nomeUnico nomeBruto
+        return (s, nomeFinal)
+    
     lookupPersonagem n = fmap (\(_, s, nome) -> (s, nome)) . safeHead . filter (\(i, _, _) -> i == n)
+    lookupSymbol sym = fmap (\(_, s, nome) -> (s, nome)) . safeHead . filter (\(_, s, _) -> s == sym)
     safeHead [] = Nothing
     safeHead (x:_) = Just x
     erro = do
@@ -121,6 +138,8 @@ continuarJogo = do
             let nome2 = snd (T.jogador2 save)
             let simbolo1 = fst (T.jogador1 save)
             let simbolo2 = fst (T.jogador2 save)
+            let j1SmallWin = T.j1SmallWin save
+            let j2SmallWin = T.j2SmallWin save
             let vez = T.vezAtual save
             let quad =T.quadrante save
             let bigBoard =T.bigBoard save
@@ -131,7 +150,7 @@ continuarJogo = do
             putStrLn "Pressione ENTER para continuar o jogo..."
             _ <- getLine
 
-            gameLoop bigBoard miniBoards simbolo1 simbolo2 vez quad nome1 nome2 winnerBoard
+            gameLoop bigBoard miniBoards simbolo1 simbolo2 vez quad nome1 nome2 j1SmallWin j2SmallWin winnerBoard
 
 
 escolherTipoDeJogo :: IO ()
@@ -219,9 +238,11 @@ iniciarPartida (symbol1, name1) (symbol2, name2) = do
                     , smallBoard7Template, smallBoard8Template, smallBoard9Template
                     ]
 
+    let j1SmallWin = 0
+    let j2SmallWin = 0
     let winnerBoard = inicializaWinnerBoard
 
-    gameLoop initialBoard initialSmallBoards symbol1 symbol2 symbol1 Nothing name1 name2 winnerBoard
+    gameLoop initialBoard initialSmallBoards symbol1 symbol2 symbol1 Nothing name1 name2 j1SmallWin j2SmallWin winnerBoard
 
 
 -- Função auxiliar: obter o ID de um símbolo (para evitar repetição)

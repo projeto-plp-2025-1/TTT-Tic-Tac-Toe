@@ -2,6 +2,7 @@ module Core.Bot
   ( botTakeTurn
   ) where
 
+import Utils.Types 
 import Control.Concurrent (threadDelay)
 import Data.Maybe (fromMaybe, isNothing, listToMaybe)
 import Data.List (maximumBy)
@@ -71,16 +72,15 @@ pickBestEmptyCell board =
   listToMaybe [idx | idx <- preferredCells, cellAt board idx == ' ']
 
 -- Obtém a lista de quadrantes disponíveis
-availableQuadrants :: [Maybe Char] -> Maybe Int -> [Int]
+availableQuadrants :: [QuadrantState] -> Maybe Int -> [Int]
 availableQuadrants winnerBoard maybeNextQuadrant =
   case maybeNextQuadrant of
-    Just q  -> [q | winnerBoard !! q == Nothing]
-    Nothing -> [i | i <- [0..8], winnerBoard !! i == Nothing]
+    Just q  -> [q | winnerBoard !! q == InProgress]
 
 -- Pontua o quadrante: atualmente simples, +10 se o bot puder ganhar o tabuleiro grande com ele,
 -- +5 se bloquear a vitória do oponente no tabuleiro grande, senão 1
 -- Você pode expandir isso depois para ser mais estratégico
-scoreQuadrant :: [Maybe Char] -> Char -> Char -> Int -> Int
+scoreQuadrant :: [QuadrantState] -> Char -> Char -> Int -> Int
 scoreQuadrant winnerBoard botSymbol opponentSymbol quadrant =
   let
     -- Auxiliares para checar linhas de 3 no tabuleiro grande de vencedores
@@ -90,17 +90,17 @@ scoreQuadrant winnerBoard botSymbol opponentSymbol quadrant =
       , [0,4,8], [2,4,6]
       ]
     -- Verifica se colocar botSymbol no quadrante leva a 3 em linha no tabuleiro grande
-    wouldWin = any (\line -> all (\i -> i == quadrant || winnerBoard !! i == Just botSymbol) line) bigWinningLines
+    wouldWin = any (\line -> all (\i -> i == quadrant || winnerBoard !! i == Winner botSymbol) line) bigWinningLines
     -- Verifica se o oponente está prestes a ganhar o tabuleiro grande colocando no quadrante
-    opponentThreat = any (\line -> all (\i -> i == quadrant || winnerBoard !! i == Just opponentSymbol) line) bigWinningLines
+    opponentThreat = any (\line -> all (\i -> i == quadrant || winnerBoard !! i == Winner opponentSymbol) line) bigWinningLines
   in
-    if winnerBoard !! quadrant /= Nothing then 0
+    if winnerBoard !! quadrant /= InProgress then 0
     else if wouldWin then 10
     else if opponentThreat then 5
     else 1
 
 -- Escolhe o melhor quadrante baseado na pontuação e disponibilidade
-chooseBestQuadrant :: [Maybe Char] -> Char -> Char -> Maybe Int -> Int
+chooseBestQuadrant :: [QuadrantState] -> Char -> Char -> Maybe Int -> Int
 chooseBestQuadrant winnerBoard botSymbol opponentSymbol maybeNextQuadrant =
   let quads = availableQuadrants winnerBoard maybeNextQuadrant
       scored = [(q, scoreQuadrant winnerBoard botSymbol opponentSymbol q) | q <- quads]
@@ -112,7 +112,7 @@ botTakeTurn
   -> [[String]]       -- Tabuleiros pequenos
   -> Char             -- Símbolo do bot
   -> Maybe Int        -- Quadrante forçado (se houver)
-  -> [Maybe Char]     -- Tabuleiro de vencedores
+  -> [QuadrantState]     -- Tabuleiro de vencedores
   -> IO (Int, [String])
 botTakeTurn bigBoard smallBoards botSymbol maybeNextQuadrant winnerBoard = do
     putStrLn "Bot está pensando..."
