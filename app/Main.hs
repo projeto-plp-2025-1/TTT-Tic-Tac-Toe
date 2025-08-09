@@ -3,13 +3,13 @@ module Main where
 import System.Process (callCommand)
 import GHC.IO.Encoding (setLocaleEncoding, utf8)
 import System.Info (os)
-import Utils.Types
+import Utils.Types (inicializaWinnerBoard)
 import System.IO (hFlush, stdout)
 import Data.Char (toUpper)
 import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
-import Core.TabuleiroMaior (gameLoop, inicializaWinnerBoard)
+import Core.TabuleiroMaior (gameLoop)
 import Core.TabuleiroMenor (
     smallBoard1Template, smallBoard2Template, smallBoard3Template,
     smallBoard4Template, smallBoard5Template, smallBoard6Template,
@@ -17,6 +17,7 @@ import Core.TabuleiroMenor (
     )
 import qualified Core.Persistencia as P
 import qualified Core.Salvamento as S
+import qualified Utils.Types as T
 
 -- Compatibilidade com Windows e Linux
 setUtf8EncodingCompat :: IO ()
@@ -100,7 +101,7 @@ verRanking = do
         else do
             mapM_
               (\(i, jogador) ->
-                  putStrLn $ show i ++ ". " ++ nome jogador ++ " - " ++ show (vitorias jogador) ++ " vitórias")
+                  putStrLn $ show i ++ ". " ++ T.nome jogador ++ " - " ++ show (T.vitorias jogador) ++ " vitórias")
               (zip [1..] ranking)
     putStrLn "\nPressione ENTER para voltar ao menu."
     _ <- getLine
@@ -116,15 +117,15 @@ continuarJogo = do
             _ <- getLine
             main
         Just save -> do
-            let nome1 = snd (S.jogador1 save)
-            let nome2 = snd (S.jogador2 save)
-            let simbolo1 = fst (S.jogador1 save)
-            let simbolo2 = fst (S.jogador2 save)
-            let vez = S.vezAtual save
-            let quad = S.quadrante save
-            let bigBoard = S.bigBoard save
-            let miniBoards = S.smallBoards save
-            let winnerBoard = S.winnerBoard save
+            let nome1 = snd (T.jogador1 save)
+            let nome2 = snd (T.jogador2 save)
+            let simbolo1 = fst (T.jogador1 save)
+            let simbolo2 = fst (T.jogador2 save)
+            let vez = T.vezAtual save
+            let quad =T.quadrante save
+            let bigBoard =T.bigBoard save
+            let miniBoards =T.smallBoards save
+            let winnerBoard =T.winnerBoard save
 
             putStrLn $ "Jogo salvo entre " ++ nome1 ++ " e " ++ nome2 ++ " carregado com sucesso!"
             putStrLn "Pressione ENTER para continuar o jogo..."
