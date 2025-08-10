@@ -60,3 +60,7 @@ Certifique-se de ter o GHC (para Haskell) e o SWI-Prolog instalados na sua máqu
 * Nicole Brito Maracajá
 
 Projeto de uso acadêmico, livre para fins educacionais.
+
+## Referência
+
+**[](https://tictactoefree.com/pt/super-jogo-da-velha/regras)**
