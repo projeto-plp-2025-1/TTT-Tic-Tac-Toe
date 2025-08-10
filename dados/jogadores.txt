@@ -1,3 +1,6 @@
+Jogador {nome = "TREVO2", vitorias = 0}
+Jogador {nome = "TREVO1", vitorias = 0}
+Jogador {nome = "TREVO", vitorias = 0}
 Jogador {nome = "XIS4", vitorias = 0}
 Jogador {nome = "BOLA3", vitorias = 0}
 Jogador {nome = "BOLA2", vitorias = 0}

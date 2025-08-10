@@ -7,6 +7,7 @@ import Control.Concurrent (threadDelay)
 import Data.Maybe (fromMaybe, isNothing, listToMaybe)
 import Data.List (maximumBy)
 import Data.Ord (comparing)
+import System.Random (randomRIO)
 
 -- Coordenadas dentro do tabuleiro pequeno para as células na sua grade 9x3 de strings:
 coords :: [(Int, Int)]
@@ -75,7 +76,8 @@ pickBestEmptyCell board =
 availableQuadrants :: [QuadrantState] -> Maybe Int -> [Int]
 availableQuadrants winnerBoard maybeNextQuadrant =
   case maybeNextQuadrant of
-    Just q  -> [q | winnerBoard !! q == InProgress]
+    Just q | winnerBoard !! q == InProgress -> [q]
+    _ -> [i | (i, state) <- zip [0..] winnerBoard, state == InProgress]
 
 -- Pontua o quadrante: atualmente simples, +10 se o bot puder ganhar o tabuleiro grande com ele,
 -- +5 se bloquear a vitória do oponente no tabuleiro grande, senão 1
@@ -99,12 +101,34 @@ scoreQuadrant winnerBoard botSymbol opponentSymbol quadrant =
     else if opponentThreat then 5
     else 1
 
+-- Escolhe a célula que tenha menos peças do oponente, ou aleatoriamente se empatar
+pickBestStrategicCell :: [String] -> Char -> Char -> IO (Maybe Int)
+pickBestStrategicCell board botSymbol opponentSymbol = do
+    let emptyCells = [idx | idx <- [0..8], cellAt board idx == ' ']
+        opponentCounts = [(idx, countOpponentNear idx) | idx <- emptyCells]
+        minOpponentCount = minimum (map snd opponentCounts)
+        bestCells = [idx | (idx, cnt) <- opponentCounts, cnt == minOpponentCount]
+    if null(bestCells)
+        then return Nothing
+        else do
+            rnd <- randomRIO (0, length bestCells - 1)
+            return (Just (bestCells !! rnd))
+  where
+    countOpponentNear idx =
+        length [n | line <- winningLines, idx `elem` line,
+                let n = length [i | i <- line, i /= idx, cellAt board i == opponentSymbol],
+                n > 0]
+
+
 -- Escolhe o melhor quadrante baseado na pontuação e disponibilidade
 chooseBestQuadrant :: [QuadrantState] -> Char -> Char -> Maybe Int -> Int
 chooseBestQuadrant winnerBoard botSymbol opponentSymbol maybeNextQuadrant =
   let quads = availableQuadrants winnerBoard maybeNextQuadrant
-      scored = [(q, scoreQuadrant winnerBoard botSymbol opponentSymbol q) | q <- quads]
-  in fst $ maximumBy (comparing snd) scored
+  in case quads of
+       [] -> 0  -- fallback to first quadrant if nothing is available (shouldn’t happen)
+       _  -> fst $ maximumBy (comparing snd)
+                 [(q, scoreQuadrant winnerBoard botSymbol opponentSymbol q) | q <- quads]
+
 
 -- Função principal de jogada do bot
 botTakeTurn
@@ -118,7 +142,7 @@ botTakeTurn bigBoard smallBoards botSymbol maybeNextQuadrant winnerBoard = do
     putStrLn "Bot está pensando..."
     threadDelay (2 * 1000000)  -- pausa de 2s
 
-    let opponentSymbol = if botSymbol == 'X' then 'O' else 'X'
+    let opponentSymbol = if botSymbol == 'X' then 'O' else 'X'  
 
     -- Escolhe o melhor quadrante para jogar
     let chosenQuadrant = chooseBestQuadrant winnerBoard botSymbol opponentSymbol maybeNextQuadrant
@@ -131,11 +155,12 @@ botTakeTurn bigBoard smallBoards botSymbol maybeNextQuadrant winnerBoard = do
     let moveBlock = if moveWin == Nothing then findBlockingMove currentSmall botSymbol opponentSymbol else Nothing
 
     -- Caso contrário, escolhe a melhor célula vazia pela preferência
-    let moveCell = case moveWin of
-                      Just idx -> Just idx
-                      Nothing -> case moveBlock of
-                                   Just idx -> Just idx
-                                   Nothing -> pickBestEmptyCell currentSmall
+    moveCell <- case moveWin of
+              Just idx -> return (Just idx)
+              Nothing -> case moveBlock of
+                           Just idx -> return (Just idx)
+                           Nothing  -> pickBestStrategicCell currentSmall botSymbol opponentSymbol
+
 
     case moveCell of
       Just idx -> do
@@ -146,3 +171,5 @@ botTakeTurn bigBoard smallBoards botSymbol maybeNextQuadrant winnerBoard = do
         let fallbackIdx = head [i | i <- [0..8], cellAt currentSmall i == ' ']
         let newSmall = placeSymbol currentSmall fallbackIdx botSymbol
         return (chosenQuadrant, newSmall)
+
+  
