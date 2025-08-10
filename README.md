@@ -40,25 +40,17 @@ O jogo segue a lógica do Super Jogo da Velha:
 
 ## Como Executar
 
-### Haskell
+### Haskell:
 
-```bash
-ghc Main.hs
-./Main
-```
+Entrar na pasta "haskell"
+Instalar todas as dependências necessárias ao projeto utilizando os comandos: cabal update e cabal install
+Por fim, rodar o projeto utilizando o comando cabal run all
 
-### Prolog (SWI-Prolog)
+### Prolog: 
 
-```prolog
-?- consult('main.pl').
-?- iniciar_jogo.
-```
+-----------
 
 Certifique-se de ter o GHC (para Haskell) e o SWI-Prolog instalados na sua máquina.
-
-## Aprendizados
-
-(COLOCAR)
 
 ## Equipe
 
@@ -66,7 +58,5 @@ Certifique-se de ter o GHC (para Haskell) e o SWI-Prolog instalados na sua máqu
 * Débora Sabrina de Oliveira Pereira
 * Nicolas Wesley Correia Paz
 * Nicole Brito Maracajá
-
-## Licença
 
 Projeto de uso acadêmico, livre para fins educacionais.
