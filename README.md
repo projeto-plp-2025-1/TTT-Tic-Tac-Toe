@@ -63,4 +63,4 @@ Projeto de uso acadêmico, livre para fins educacionais.
 
 ## Referência
 
-**[](https://tictactoefree.com/pt/super-jogo-da-velha/regras)**
+https://tictactoefree.com/pt/super-jogo-da-velha/regras
