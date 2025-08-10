@@ -81,7 +81,6 @@ availableQuadrants winnerBoard maybeNextQuadrant =
 
 -- Pontua o quadrante: atualmente simples, +10 se o bot puder ganhar o tabuleiro grande com ele,
 -- +5 se bloquear a vitória do oponente no tabuleiro grande, senão 1
--- Você pode expandir isso depois para ser mais estratégico
 scoreQuadrant :: [QuadrantState] -> Char -> Char -> Int -> Int
 scoreQuadrant winnerBoard botSymbol opponentSymbol quadrant =
   let

@@ -157,7 +157,7 @@ escolherTipoDeJogo :: IO ()
 escolherTipoDeJogo = do
     putStrLn "\nEscolha o modo de jogo:"
     putStrLn "1 -> Multiplayer (2 jogadores locais)"
-    putStrLn "2 -> Contra o bot (singleplayer)"
+    putStrLn "2 -> Singleplayer (Contra o bot)"
     putStr "→ "
     hFlush stdout
     escolha <- getLine

@@ -219,14 +219,14 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
     putStrLn ""
     putStrLn (unlines bigBoard)
 
-    
+
     let currentPlayerName = if currentPlayer == player1Symbol then name1 else name2
 
     -- Ajusta quadrante obrigatório para liberar se já foi vencido
     let adjustedNextQuadrant = case maybeNextQuadrant of
             Just idx -> case winnerBoard !! idx of
-                     InProgress -> Just idx  
-                     _ -> Nothing          
+                     InProgress -> Just idx
+                     _ -> Nothing
             Nothing  -> Nothing
 
     if currentPlayerName == "Bot" then do
@@ -292,8 +292,8 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                     exibirPlacar player1Symbol name1 j1SmallWin player2Symbol name2  j2SmallWin
                     putStrLn "Pressione ENTER para continuar."
                     _ <- getLine
-                    gameLoop bigBoard smallBoards player1Symbol player2Symbol 
-                            currentPlayer adjustedNextQuadrant name1 name2 
+                    gameLoop bigBoard smallBoards player1Symbol player2Symbol
+                            currentPlayer adjustedNextQuadrant name1 name2
                             j1SmallWin j2SmallWin winnerBoard
 
                 _ -> do
@@ -325,7 +325,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                 putStrLn "Pressione Enter para continuar..."
                                 _ <- getLine
                                 gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 j1SmallWin j2SmallWin winnerBoard
-                            
+
                             else do
                                 putStrLn $ "\n--- Acessando o quadrante " ++ show index ++ " ---"
                                 putStrLn "Pressione Enter para continuar..."
@@ -340,7 +340,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                         let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
                                         let drawWinnerBoard = atualizaDrawBoard winnerBoard boardIndex newBoard
                                         let (newWinnerBoard, newj1SmallWin, newj2SmallWin) = atualizaWinner drawWinnerBoard boardIndex newBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
-                                        
+
                                         if verificarVitoriaMaior newWinnerBoard currentPlayer then do
                                             clearScreen
                                             putStrLn (unlines bigBoard)
@@ -349,13 +349,13 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                         else if todosQuadrantesFinalizados newWinnerBoard then do
                                             clearScreen
                                             putStrLn (unlines bigBoard)
-                                                
+
                                             case vencedorPorContagem j1SmallWin j2SmallWin player1Symbol player2Symbol of
                                                 Just winnerSymbol -> do
                                                     let winnerName = if winnerSymbol == player1Symbol then name1 else name2
                                                     exibirVencedor winnerName
                                                     P.registrarVitoria winnerName
-                                                Nothing -> 
+                                                Nothing ->
                                                     exibirVelha
                                         else
                                             case updateBoard bigBoard boardIndex currentSmallBoard newBoard of
