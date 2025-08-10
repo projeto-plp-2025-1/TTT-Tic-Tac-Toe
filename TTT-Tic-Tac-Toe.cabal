@@ -59,16 +59,32 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  Tabuleiro
-
+    exposed-modules:  Utils.Types
+                      Utils.VerificacaoVitoria
+                      Core.TabuleiroMaior
+                      Core.TabuleiroMenor
+                      Core.Salvamento
+                      Core.Persistencia
+                                          
     -- Modules included in this library but not exported.
-    other-modules: Arte
+    other-modules: Interface.Arte
+                   Interface.Menu
+                   Interface.Regras
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.18.3.0
+    build-depends:    
+        filepath ^>=1.4.301.0,
+        base ^>=4.18.3.0,
+        text,
+        containers,
+        time ^>=1.12.2,
+        async ^>=2.2.5,
+        directory,
+        split,
+        random
 
     -- Directories containing source files.
     hs-source-dirs:   src, app
@@ -92,7 +108,15 @@ executable TTT-Tic-Tac-Toe
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.18.3.0,
-        TTT-Tic-Tac-Toe
+        TTT-Tic-Tac-Toe,
+        text,
+        containers,
+        split,
+        process ^>=1.6.19.0,
+        directory,
+        time,
+        async,
+        random
 
     -- Directories containing source files.
     hs-source-dirs:   app, src
