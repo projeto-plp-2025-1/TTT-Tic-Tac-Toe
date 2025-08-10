@@ -43,8 +43,9 @@ exibirVencedor nomeVencedor = do
 
 
 -- Exibe a tela de fim de jogo quando PERDE para o bot
-exibirPerdedorJogoContraBot :: IO ()
-exibirPerdedorJogoContraBot = do
+exibirPerdedorJogoContraBot :: String -> IO ()
+exibirPerdedorJogoContraBot nomeJogador = do
+        clearScreen
         putStrLn "                                                                "
         putStrLn "     ╔═════════════════════════════════════════════════════════╗"
         putStrLn "     ║                                                         ║"
@@ -56,6 +57,10 @@ exibirPerdedorJogoContraBot = do
         putStrLn "     ║    ╚═╝     ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝     ║"
         putStrLn "     ║                                                         ║"
         putStrLn "     ╚═════════════════════════════════════════════════════════╝"
+        putStrLn $ "     🤣 " ++nomeJogador ++ ", você perdeu para o bot! HA HA HA!" 
+        
+        
+
 
 -- Exibe a tela da Velha.
 exibirVelha :: IO() 

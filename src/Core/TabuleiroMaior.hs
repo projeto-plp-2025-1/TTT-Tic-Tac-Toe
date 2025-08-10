@@ -3,7 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Core.TabuleiroMaior where
 
-import Interface.Arte (clearScreen, exibirVencedor, exibirVelha)
+import Interface.Arte 
 import Data.Char (toLower)  
 import Core.Bot 
 import System.IO (hFlush, stdout)
@@ -239,7 +239,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
         if verificarVitoriaMaior newWinnerBoard currentPlayer then do
             clearScreen
             putStrLn (unlines bigBoard)
-            exibirVencedor currentPlayerName
+            exibirPerdedorJogoContraBot name1
             P.registrarVitoria currentPlayerName
 
         -- Verifica empate (todos quadrantes finalizados)

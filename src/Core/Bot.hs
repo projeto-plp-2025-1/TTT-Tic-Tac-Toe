@@ -125,7 +125,7 @@ chooseBestQuadrant :: [QuadrantState] -> Char -> Char -> Maybe Int -> Int
 chooseBestQuadrant winnerBoard botSymbol opponentSymbol maybeNextQuadrant =
   let quads = availableQuadrants winnerBoard maybeNextQuadrant
   in case quads of
-       [] -> 0  -- fallback to first quadrant if nothing is available (shouldn’t happen)
+       [] -> 0  
        _  -> fst $ maximumBy (comparing snd)
                  [(q, scoreQuadrant winnerBoard botSymbol opponentSymbol q) | q <- quads]
 
@@ -140,7 +140,7 @@ botTakeTurn
   -> IO (Int, [String])
 botTakeTurn bigBoard smallBoards botSymbol maybeNextQuadrant winnerBoard = do
     putStrLn "Bot está pensando..."
-    threadDelay (2 * 1000000)  -- pausa de 2s
+    threadDelay (2 * 1000000) 
 
     let opponentSymbol = if botSymbol == 'X' then 'O' else 'X'  
 
