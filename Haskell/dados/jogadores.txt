@@ -1,2 +1,5 @@
-Jogador {nome = "Big O", vitorias = 1}
-Jogador {nome = "XIS", vitorias = 1}
+Jogador {nome = "SORRISO", vitorias = 1}
+Jogador {nome = "Big O", vitorias = 2}
+Jogador {nome = "XIS", vitorias = 3}
+Jogador {nome = ":D", vitorias = 4}
+Jogador {nome = "Batata", vitorias = 1}
