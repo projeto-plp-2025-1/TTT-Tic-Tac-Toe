@@ -1,4 +1,4 @@
-# Como baixar e executar Palavrão (Haskell)
+# Como baixar e executar TTT (Haskell)
 
 * Instalar o gerenciador de pacotes Cabal na sua máquina. Para mais informações de instalação acessar o seguinte link: <https://www.haskell.org/cabal/>
 * Clonar este repositório
