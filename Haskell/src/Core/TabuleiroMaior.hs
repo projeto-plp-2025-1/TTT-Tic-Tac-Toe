@@ -15,7 +15,7 @@ import qualified Utils.VerificacaoVitoria as VV
 import qualified Core.Persistencia as P
 import qualified Core.Salvamento as S
 import qualified Utils.Types as Type
-import Utils.Types (SmallBoardState, QuadrantState (..))
+import Utils.Types (SmallBoardState, QuadrantState (..), GameState (bigBoard))
 import Data.Int (Int)
 
 -- Converte uma entrada (1 a 9) para o índice correspondente (0 a 8)
@@ -159,11 +159,11 @@ exibirPlacar player1Symbol nome1 p1SmallWins player2Symbol nome2 p2SmallWins = d
     putStrLn "\n------- PLACAR -------"
     if p1SmallWins >= p2SmallWins
         then do
-            putStrLn $ nome1 ++ " " ++ show player1Symbol ++ ": " ++ show p1SmallWins ++ " vitórias"
-            putStrLn $ nome2 ++ " " ++ show player2Symbol ++  ": " ++ show p2SmallWins ++ " vitórias"
+            putStrLn $ nome1 ++ " " ++ [player1Symbol] ++ ": " ++ show p1SmallWins ++ " vitórias"
+            putStrLn $ nome2 ++ " " ++ [player2Symbol] ++  ": " ++ show p2SmallWins ++ " vitórias"
         else do
-            putStrLn $ nome2 ++ " " ++ show player2Symbol ++  ": " ++ show p2SmallWins ++ " vitórias"
-            putStrLn $ nome1 ++ " " ++ show player1Symbol ++  ": " ++ show p1SmallWins ++ " vitórias"
+            putStrLn $ nome2 ++ " " ++ [player2Symbol] ++  ": " ++ show p2SmallWins ++ " vitórias"
+            putStrLn $ nome1 ++ " " ++ [player1Symbol] ++  ": " ++ show p1SmallWins ++ " vitórias"
     putStrLn ""
 
 verificarDraw :: [String] -> Bool
@@ -222,7 +222,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
 
     let currentPlayerName = if currentPlayer == player1Symbol then name1 else name2
 
-    -- Ajusta quadrante obrigatório para liberar se já foi vencido
+    -- Adjust mandatory quadrant - free if already won
     let adjustedNextQuadrant = case maybeNextQuadrant of
             Just idx -> case winnerBoard !! idx of
                      InProgress -> Just idx
@@ -233,33 +233,36 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
         (chosenQuadrant, newSmallBoard) <- botTakeTurn bigBoard smallBoards currentPlayer adjustedNextQuadrant winnerBoard
         let currentSmallBoard = smallBoards !! chosenQuadrant
             newSmallBoards = replaceAtIndex chosenQuadrant newSmallBoard smallBoards
-            newWinnerBoard = atualizaWinnerBoard winnerBoard chosenQuadrant newSmallBoard currentPlayer
-
-        -- Verifica vitória do bot no tabuleiro maior
+            (newWinnerBoard, newJ1Wins, newJ2Wins) = 
+                atualizaWinner winnerBoard chosenQuadrant newSmallBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
+            
         if verificarVitoriaMaior newWinnerBoard currentPlayer then do
             clearScreen
             putStrLn (unlines bigBoard)
             exibirPerdedorJogoContraBot name1
-            P.registrarVitoria currentPlayerName
-
-        -- Verifica empate (todos quadrantes finalizados)
+            return ()
+            
         else if todosQuadrantesFinalizados newWinnerBoard then do
             clearScreen
             putStrLn (unlines bigBoard)
             exibirVelha
-
-        else
-            case updateBoard bigBoard chosenQuadrant currentSmallBoard newSmallBoard of
-            Just newBigBoard -> do
-                let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
-                    nextQuadrant = getChangedCellIndex currentSmallBoard newSmallBoard
-                gameLoop newBigBoard newSmallBoards player1Symbol player2Symbol nextPlayer nextQuadrant name1 name2 j1SmallWin j2SmallWin newWinnerBoard
-            Nothing -> do
-                putStrLn "Bot fez uma jogada inválida!"
-                let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
-                gameLoop bigBoard smallBoards player1Symbol player2Symbol nextPlayer adjustedNextQuadrant name1 name2 j1SmallWin j2SmallWin winnerBoard
-
+            return ()
+            
         else do
+            case updateBoard bigBoard chosenQuadrant currentSmallBoard newSmallBoard of
+                Just newBigBoard -> do
+                    let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
+                        nextQuadrant = getChangedCellIndex currentSmallBoard newSmallBoard
+                    gameLoop newBigBoard newSmallBoards player1Symbol player2Symbol 
+                            nextPlayer nextQuadrant name1 name2 newJ1Wins newJ2Wins newWinnerBoard
+                
+                Nothing -> do
+                    putStrLn "Bot fez uma jogada inválida!"
+                    let nextPlayer = switchPlayer player1Symbol player2Symbol currentPlayer
+                    gameLoop bigBoard smallBoards player1Symbol player2Symbol 
+                            nextPlayer adjustedNextQuadrant name1 name2 j1SmallWin j2SmallWin winnerBoard
+
+    else do
             putStrLn $ "Turno de: " ++ currentPlayerName ++ " [" ++ [currentPlayer] ++ "]"
 
             case adjustedNextQuadrant of
@@ -338,19 +341,21 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                 case maybeNewSmallBoard of
                                     Just newBoard -> do
                                         let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
-                                        let drawWinnerBoard = atualizaDrawBoard winnerBoard boardIndex newBoard
-                                        let (newWinnerBoard, newj1SmallWin, newj2SmallWin) = atualizaWinner drawWinnerBoard boardIndex newBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
-
+                                            drawWinnerBoard = atualizaDrawBoard winnerBoard boardIndex newBoard
+                                            (newWinnerBoard, newj1SmallWin, newj2SmallWin) = atualizaWinner drawWinnerBoard boardIndex newBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
+                                            newBigBoard = updateBoard bigBoard boardIndex currentSmallBoard newBoard
                                         if verificarVitoriaMaior newWinnerBoard currentPlayer then do
                                             clearScreen
-                                            putStrLn (unlines bigBoard)
+                                            case newBigBoard of
+                                                Just board -> putStrLn (unlines board)
                                             exibirVencedor currentPlayerName
                                             P.registrarVitoria currentPlayerName
                                         else if todosQuadrantesFinalizados newWinnerBoard then do
                                             clearScreen
-                                            putStrLn (unlines bigBoard)
+                                            case newBigBoard of
+                                                Just board -> putStrLn (unlines board)
 
-                                            case vencedorPorContagem j1SmallWin j2SmallWin player1Symbol player2Symbol of
+                                            case vencedorPorContagem newj1SmallWin newj2SmallWin player1Symbol player2Symbol of
                                                 Just winnerSymbol -> do
                                                     let winnerName = if winnerSymbol == player1Symbol then name1 else name2
                                                     exibirVencedor winnerName
@@ -367,7 +372,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                                     putStrLn "Erro: posição já ocupada no tabuleiro maior!"
                                                     putStrLn "Pressione Enter para continuar..."
                                                     _ <- getLine
-                                                    gameLoop bigBoard newSmallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 j1SmallWin j2SmallWin winnerBoard
+                                                    gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer adjustedNextQuadrant name1 name2 j1SmallWin j2SmallWin winnerBoard
                                     Nothing -> do
                                         putStrLn "\nTempo esgotado. Passando a vez..."
                                         putStrLn "Pressione Enter para continuar..."

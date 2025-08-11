@@ -35,6 +35,7 @@ gerarNomeUnico nomeExistentes existentes n
 
 -- Registra vitória de um jogador
 registrarVitoria :: String -> IO ()
+registrarVitoria "Bot" = putStr ""
 registrarVitoria vencedorNome = atomicUpdate $ 
     incrementaJogador vencedorNome
 
