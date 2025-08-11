@@ -1,3 +1,2 @@
-Jogador {nome = "Velha", vitorias = 99}
-Jogador {nome = "Big O", vitorias = 3}
-Jogadr  {nome = "Xis, Vitorias = 2}
+Jogador {nome = "Big O", vitorias = 1}
+Jogador {nome = "XIS", vitorias = 1}

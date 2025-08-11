@@ -5,7 +5,7 @@ import GHC.IO.Encoding (setLocaleEncoding, utf8)
 import System.Info (os)
 import Utils.Types (inicializaWinnerBoard)
 import System.IO (hFlush, stdout)
-import Data.Char (toUpper)
+import Data.Char (toUpper, isSpace)
 import Interface.Arte (clearScreen, exibirInicio)
 import Interface.Regras (exibirRegras)
 import Interface.Menu (exibirMenu)
@@ -17,6 +17,7 @@ import Core.TabuleiroMenor (
     )
 import qualified Core.Persistencia as P
 import qualified Core.Salvamento as S
+import qualified Utils.Types as T
 import qualified Utils.Types as T
 
 -- Compatibilidade com Windows e Linux
@@ -47,8 +48,8 @@ mostrarPersonagens ps = do
     mapM_ (\(i, s, n) -> putStrLn $ show i ++ " -> [" ++ [s] ++ "] " ++ n) ps
 
 -- Pedir escolha de personagem (símbolo + nome)
-escolherPersonagem :: [Int] -> IO (Char, String)
-escolherPersonagem usados = do
+escolherPersonagem :: [Int] -> [String] -> IO (Char, String)
+escolherPersonagem usados nomesUsados = do
     let disponiveis = filter (\(i, _, _) -> i `notElem` usados) personagens
     mostrarPersonagens disponiveis
     
@@ -61,35 +62,45 @@ escolherPersonagem usados = do
             let defaultSymbols = ['X', 'O']
                 availableSymbols = [s | (_, s, _) <- disponiveis]
                 symbol = head $ filter (`elem` availableSymbols) defaultSymbols
-                
             case lookupSymbol symbol disponiveis of
-                Just (s, nomePadrao) -> getPlayerName s nomePadrao
+                Just (s, nomePadrao) -> getPlayerName nomesUsados s nomePadrao
                 Nothing -> erro
-                
         _ -> case reads input :: [(Int, String)] of
             [(num, "")] ->
                 case lookupPersonagem num disponiveis of
-                Just (s, nomePadrao) -> getPlayerName s nomePadrao
+                Just (s, nomePadrao) -> getPlayerName nomesUsados s nomePadrao
                 Nothing -> erro
             _ -> erro
   where
     -- Função auxiliar para obter o nome do jogador
-    getPlayerName :: Char -> String -> IO (Char, String)
-    getPlayerName s nomePadrao = do
+    getPlayerName :: [String] -> Char -> String -> IO (Char, String)
+    getPlayerName nomesUsados s nomePadrao = do
         putStr $ "Deseja um nome personalizado para o personagem [" ++ [s] ++ "]? (pressione Enter para usar '" ++ nomePadrao ++ "'): "
         hFlush stdout
         nomeInput <- getLine
-        let nomeBruto = if null nomeInput then nomePadrao else nomeInput
-        nomeFinal <- P.nomeUnico nomeBruto
-        return (s, nomeFinal)
-    
+        let nomeLimpo = trim nomeInput
+        nomeEscolhido <- 
+            if null nomeLimpo
+                then P.nomeUnico nomePadrao
+                else return nomeLimpo
+        
+        if nomeEscolhido `elem` nomesUsados
+            then do
+                putStrLn "Esse nome já foi escolhido. Escolha outro."
+                getPlayerName nomesUsados s nomePadrao
+            else return (s, nomeEscolhido)
+
+    trim :: String -> String
+    trim = f . f
+        where f = reverse . dropWhile isSpace 
+
     lookupPersonagem n = fmap (\(_, s, nome) -> (s, nome)) . safeHead . filter (\(i, _, _) -> i == n)
     lookupSymbol sym = fmap (\(_, s, nome) -> (s, nome)) . safeHead . filter (\(_, s, _) -> s == sym)
     safeHead [] = Nothing
     safeHead (x:_) = Just x
     erro = do
         putStrLn "Escolha inválida. Tente novamente."
-        escolherPersonagem usados
+        escolherPersonagem usados nomesUsados
 
 -- Função principal
 main :: IO ()
@@ -134,13 +145,13 @@ continuarJogo = do
             _ <- getLine
             main
         Just save -> do
-            let nome1 = snd (T.jogador1 save)
-            let nome2 = snd (T.jogador2 save)
-            let simbolo1 = fst (T.jogador1 save)
-            let simbolo2 = fst (T.jogador2 save)
-            let j1SmallWin = T.j1SmallWin save
-            let j2SmallWin = T.j2SmallWin save
-            let vez = T.vezAtual save
+            let nome1 = snd (T.player1 save)
+            let nome2 = snd (T.player2 save)
+            let simbolo1 = fst (T.player1 save)
+            let simbolo2 = fst (T.player2 save)
+            let j1SmallWin = T.p1SmallWin save
+            let j2SmallWin = T.p2SmallWin save
+            let vez = T.curentPlayer save
             let quad =T.quadrante save
             let bigBoard =T.bigBoard save
             let miniBoards =T.smallBoards save
@@ -172,12 +183,12 @@ escolherTipoDeJogo = do
 iniciarJogo :: IO ()
 iniciarJogo = do
     putStrLn "JOGADOR 1"
-    jogador1 <- escolherPersonagem []
+    jogador1 <- escolherPersonagem [] []
     P.criarConta (snd jogador1)
     putStrLn $ "Jogador 1 escolheu: [" ++ [fst jogador1] ++ "] " ++ snd jogador1
 
     putStrLn "\nJOGADOR 2"
-    jogador2 <- escolherPersonagem [getId (fst jogador1)]
+    jogador2 <- escolherPersonagem [getId (fst jogador1)] [snd jogador1]
     P.criarConta (snd jogador2)
     putStrLn $ "Jogador 2 escolheu: [" ++ [fst jogador2] ++ "] " ++ snd jogador2
 
@@ -189,7 +200,7 @@ iniciarJogo = do
 iniciarJogoContraBot :: IO ()
 iniciarJogoContraBot = do
     putStrLn "VOCÊ"
-    jogador1@(symbol1, name1) <- escolherPersonagem []
+    jogador1@(symbol1, name1) <- escolherPersonagem [] []
     P.criarConta name1
     putStrLn $ "Você escolheu: [" ++ [symbol1] ++ "] " ++ name1
 

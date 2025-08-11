@@ -16,11 +16,11 @@ inicializaWinnerBoard :: [QuadrantState]
 inicializaWinnerBoard = replicate 9 InProgress
 
 data GameState = GameState{ 
-    jogador1     :: (Char, String),
-    j1SmallWin :: Int,
-    jogador2     :: (Char, String),
-    j2SmallWin :: Int,
-    vezAtual     :: Char,
+    player1     :: (Char, String),
+    p1SmallWin :: Int,
+    player2     :: (Char, String),
+    p2SmallWin :: Int,
+    curentPlayer     :: Char,
     quadrante    :: Maybe Int,
     bigBoard     :: [String],
     smallBoards  :: [[String]],

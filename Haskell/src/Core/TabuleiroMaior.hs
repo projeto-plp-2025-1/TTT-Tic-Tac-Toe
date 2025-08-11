@@ -127,24 +127,24 @@ updateBoard bigBoard quadrantIndex oldSmallBoard newSmallBoard = do
             in Just updatedBigBoard
 
 -- Atualiza o estado do jogo quando um jogador vence um tabuleiro menor
-atualizaWinner :: SmallBoardState -> Int -> [String] -> Char -> Char -> Int -> Int 
+updateWinner :: SmallBoardState -> Int -> [String] -> Char -> Char -> Int -> Int 
               -> (SmallBoardState, Int, Int)
-atualizaWinner winners idx smallBoard currentPlayer player1Symbol j1SW j2SW =
+updateWinner winners idx smallBoard currentPlayer player1Symbol j1SmallWin j2SmallWin =
     if VV.verificarVitoria smallBoard currentPlayer
        then (replaceAtIndex idx (Winner currentPlayer) winners,
-            if currentPlayer == player1Symbol then j1SW + 1 else j1SW,
-            if currentPlayer == player1Symbol then j2SW else j2SW + 1)
-       else (winners, j1SW, j2SW)
+            if currentPlayer == player1Symbol then j1SmallWin + 1 else j1SmallWin,
+            if currentPlayer == player1Symbol then j2SmallWin else j2SmallWin + 1)
+       else (winners, j1SmallWin, j2SmallWin)
 
 -- Função auxiliar para atualizar apenas o winnerBoard
-atualizaWinnerBoard :: SmallBoardState -> Int -> [String] -> Char -> SmallBoardState
-atualizaWinnerBoard winners idx smallBoard jogador =
-    if VV.verificarVitoria smallBoard jogador
-       then replaceAtIndex idx (Winner jogador) winners
+updateWinnerBoard :: SmallBoardState -> Int -> [String] -> Char -> SmallBoardState
+updateWinnerBoard winners idx smallBoard playerSymbol =
+    if VV.verificarVitoria smallBoard playerSymbol
+       then replaceAtIndex idx (Winner playerSymbol) winners
        else winners
 
-atualizaDrawBoard :: SmallBoardState -> Int -> [String] -> SmallBoardState
-atualizaDrawBoard winners idx smallBoard =
+updateDrawBoard :: SmallBoardState -> Int -> [String] -> SmallBoardState
+updateDrawBoard winners idx smallBoard =
     if verificarDraw smallBoard && winners !! idx == InProgress
        then replaceAtIndex idx Draw winners
        else winners
@@ -223,7 +223,6 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
 
     let currentPlayerName = if currentPlayer == player1Symbol then name1 else name2
 
-    -- Adjust mandatory quadrant - free if already won
     let adjustedNextQuadrant = case maybeNextQuadrant of
             Just idx -> case winnerBoard !! idx of
                      InProgress -> Just idx
@@ -235,7 +234,7 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
         let currentSmallBoard = smallBoards !! chosenQuadrant
             newSmallBoards = replaceAtIndex chosenQuadrant newSmallBoard smallBoards
             (newWinnerBoard, newJ1Wins, newJ2Wins) = 
-                atualizaWinner winnerBoard chosenQuadrant newSmallBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
+                updateWinner winnerBoard chosenQuadrant newSmallBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
             
         case (winnerBoard !! chosenQuadrant, newWinnerBoard !! chosenQuadrant) of
             (InProgress, Winner c) -> do
@@ -348,8 +347,8 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
                                 case maybeNewSmallBoard of
                                     Just newBoard -> do
                                         let newSmallBoards = replaceAtIndex boardIndex newBoard smallBoards
-                                            drawWinnerBoard = atualizaDrawBoard winnerBoard boardIndex newBoard
-                                            (newWinnerBoard, newj1SmallWin, newj2SmallWin) = atualizaWinner drawWinnerBoard boardIndex newBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
+                                            drawWinnerBoard = updateDrawBoard winnerBoard boardIndex newBoard
+                                            (newWinnerBoard, newj1SmallWin, newj2SmallWin) = updateWinner drawWinnerBoard boardIndex newBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
                                             newBigBoard = updateBoard bigBoard boardIndex currentSmallBoard newBoard
                                         if verificarVitoriaMaior newWinnerBoard currentPlayer then do
                                             clearScreen
