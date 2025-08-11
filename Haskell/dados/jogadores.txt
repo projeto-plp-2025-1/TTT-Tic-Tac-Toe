@@ -1,0 +1,8 @@
+Jogador {nome = "BOLA1", vitorias = 1}
+Jogador {nome = "XIS", vitorias = 0}
+Jogador {nome = "BOLA", vitorias = 0}
+Jogador {nome = "ca", vitorias = 0}
+Jogador {nome = "TREVO", vitorias = 0}
+Jogador {nome = "Velha", vitorias = 99}
+Jogador {nome = "Big O", vitorias = 2}
+Jogador {nome = "Bot", vitorias = 1}
