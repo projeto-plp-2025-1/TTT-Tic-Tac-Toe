@@ -17,6 +17,7 @@ import qualified Core.Salvamento as S
 import qualified Utils.Types as Type
 import Utils.Types (SmallBoardState, QuadrantState (..), GameState (bigBoard))
 import Data.Int (Int)
+import Control.Concurrent (threadDelay)
 
 -- Converte uma entrada (1 a 9) para o índice correspondente (0 a 8)
 getQuadrantIndex :: Int -> Maybe Int
@@ -236,6 +237,12 @@ gameLoop bigBoard smallBoards player1Symbol player2Symbol currentPlayer maybeNex
             (newWinnerBoard, newJ1Wins, newJ2Wins) = 
                 atualizaWinner winnerBoard chosenQuadrant newSmallBoard currentPlayer player1Symbol j1SmallWin j2SmallWin
             
+        case (winnerBoard !! chosenQuadrant, newWinnerBoard !! chosenQuadrant) of
+            (InProgress, Winner c) -> do
+                putStrLn "\x1F3C6 Vitória do Bot no Tabuleiro menor!"
+                threadDelay (2 * 1000000)
+            _ -> return()
+        
         if verificarVitoriaMaior newWinnerBoard currentPlayer then do
             clearScreen
             putStrLn (unlines bigBoard)
