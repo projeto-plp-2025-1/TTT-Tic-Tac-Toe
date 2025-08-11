@@ -35,7 +35,10 @@ license:            BSD-3-Clause
 license-file:       LICENSE
 
 -- The package author(s).
-author:             nicolemaracaja
+author:             nicolemaracaja,
+                    CarlosArturr,
+                    Nicolaspaz08,
+                    DeboraSabrinaOPereira
 
 -- An email address to which users can send suggestions, bug reports, and patches.
 maintainer:         nicole.brito.maracaja@ccc.ufcg.edu.br
