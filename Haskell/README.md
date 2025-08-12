@@ -5,4 +5,4 @@
 * Entrar na pasta "haskell"
 * Instalar todas as dependências necessárias ao projeto utilizando os comandos: cabal update e cabal install
 * Por fim, rodar o projeto utilizando o comando cabal run all
-* Caso tenha algum problema ao tentar instalar alguma dependência, acessar o arquivo palavrao.cabal para analisar a lista completa de dependencias do projeto e assim poder fazer sua instalação manualmente
+* Caso tenha algum problema ao tentar instalar alguma dependência, acessar o arquivo TTT-Tic-Tac-Toe.cabal para analisar a lista completa de dependencias do projeto e assim poder fazer sua instalação manualmente
