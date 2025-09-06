@@ -48,7 +48,11 @@ Por fim, rodar o projeto utilizando o comando cabal run all
 
 ### Prolog: 
 
------------
+Entrar na pasta prolog
+Iniciar o ambiente interativo SWI-Prolog com o comando: swipl
+Por fim, carregar e executar o projeto com os seguintes comandos (dentro do Prolog):
+?- [main].
+?- main.
 
 Certifique-se de ter o GHC (para Haskell) e o SWI-Prolog instalados na sua máquina.
 
