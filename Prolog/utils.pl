@@ -10,7 +10,7 @@
 
 :- use_module(game_logic).
 
-% --- PREDICADOS UTILITÁRIOS ---
+% Predicados que o jogo utiliza
 clear_screen :- write('\e[2J\e[H').
 press_enter_to_continue :- nl, write('Pressione ENTER para continuar...'), read_line_to_string(user_input, _).
 switch_player :- current_player(CP), player1(P1), player2(P2), ( CP == P1 -> NP=P2 ; NP=P1 ), retract(current_player(_)), assertz(current_player(NP)).
@@ -41,7 +41,7 @@ parse_algebraic_cell(In, C) :- string_chars(In, [RowC,ColC]), char_to_row(RowC,R
 char_to_row('A',0). char_to_row('B',1). char_to_row('C',2). char_to_row('D',0). char_to_row('E',1). char_to_row('F',2). char_to_row('G',0). char_to_row('H',1). char_to_row('I',2).
 char_to_col('1',0). char_to_col('2',1). char_to_col('3',2). char_to_col('4',0). char_to_col('5',1). char_to_col('6',2). char_to_col('7',0). char_to_col('8',1). char_to_col('9',2).
 
-% Predicados que o UI e Small Board precisam
+% Predicados que o a interface e o tabuleiro menor usam
 print_lines([]).
 print_lines([H|T]) :- writeln(H), print_lines(T).
 replace_nth(L, I, X, R) :- nth0(I, L, _, Tmp), nth0(I, R, X, Tmp).

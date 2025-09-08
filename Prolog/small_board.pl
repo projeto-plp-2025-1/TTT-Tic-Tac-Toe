@@ -1,5 +1,3 @@
-% small_board.pl
-
 :- module(small_board,
           [ play_on_small_board/2,
             display_small_board/1
