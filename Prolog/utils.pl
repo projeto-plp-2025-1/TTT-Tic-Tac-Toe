@@ -9,6 +9,7 @@
           ]).
 
 :- use_module(game_logic).
+:- encoding(utf8).
 
 % Predicados que o jogo utiliza
 clear_screen :- write('\e[2J\e[H').

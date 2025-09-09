@@ -1,0 +1,2 @@
+//corrgir persistencia, ranking acessar esse arquivo e guardar aqui os potnos de vitoria
+//nome é identificação unica no sistema

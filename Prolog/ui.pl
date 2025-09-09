@@ -10,6 +10,8 @@
 
 :- use_module(utils).
 :- use_module(game_logic).
+:- use_module(persistence).
+:- encoding(utf8).
 
 print_lines([]).
 print_lines([H|T]) :- writeln(H), print_lines(T).
@@ -108,23 +110,62 @@ show_scoreboard :-
     format('~w [~w]: ~d\n', [N2, S2, W2]),
     writeln('----------------------------------').
 
-choose_player(PlayerNum, UsedPlayers, player(Symbol, Name)) :-
+% ================================
+% Personagens disponíveis
+% ================================
+available_characters([
+    char('X',"Xis"),
+    char('O',"Bola"),
+    char('#',"Cerquinha"),
+    char('@',"Arroba"),
+    char('&',"E-Comercial"),
+    char('%',"Porcento")
+]).
+
+print_characters([], _).
+print_characters([char(Symbol, Name)|Rest], Index) :-
+    format("  ~w) [~w] ~w~n", [Index, Symbol, Name]),
+    NextIndex is Index + 1,
+    print_characters(Rest, NextIndex).
+
+choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     available_characters(Chars),
-    format('Jogador(a) ~d, escolha seu personagem:\n', [PlayerNum]),
-    print_characters(Chars, UsedPlayers),
-    write('Digite o número do personagem: '),
-    read_line_to_string(user_input, NumStr),
-    atom_number(NumStr, Num),
-    nth1(Num, Chars, char(Symbol, DefaultName)),
-    \+ member(player(Symbol, _), UsedPlayers), !,
-    format('Personagem escolhido: [~w] ~w\n', [Symbol, DefaultName]),
-    write('Digite um nome (ou Enter para usar o padrão): '),
-    read_line_to_string(user_input, NameInput),
-    ( NameInput == "" -> Name = DefaultName ; Name = NameInput ),
-    format('Jogador(a) ~d é ~w [~w]\n', [PlayerNum, Name, Symbol]).
-choose_player(PlayerNum, UsedPlayers, Player) :-
-    writeln('Seleção inválida ou personagem já escolhido. Tente novamente.'),
-    choose_player(PlayerNum, UsedPlayers, Player).
+    format("Jogador(a) ~w, escolha seu símbolo:~n", [PlayerNum]),
+    print_characters(Chars, 1),
+    read_line_to_string(user_input, ChoiceStr),
+    catch(number_string(Choice, ChoiceStr), _, fail),
+    nth1(Choice, Chars, char(Symbol, DefaultName)),
+
+    format("Digite seu nome (ou pressione ENTER para usar \"~w\"): ", [DefaultName]),
+    read_line_to_string(user_input, InputName),
+
+    ( InputName == "" -> RawName = DefaultName
+    ; string_upper(InputName, Upper), Upper == "BOT" ->
+        writeln("⚠️ O nome \"Bot\" é reservado. Escolha outro."),
+        choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName))
+    ; RawName = InputName
+    ),
+
+    % garantir nome único
+    extract_names(ExistingPlayers, UsedNames),
+    generate_unique_name(RawName, UsedNames, FinalName).
+
+generate_unique_name(Base, Used, Unique) :-
+    ( member(Base, Used) ->
+        generate_with_suffix(Base, Used, 2, Unique),
+        format("⚠️ O nome \"~w\" já existe. Seu nome será \"~w\".~n", [Base, Unique])
+    ; Unique = Base ).
+
+generate_with_suffix(Base, Used, N, Unique) :-
+    format(string(Candidate), "~w~w", [Base, N]),
+    ( member(Candidate, Used) ->
+        N2 is N + 1,
+        generate_with_suffix(Base, Used, N2, Unique)
+    ; Unique = Candidate ).
+
+extract_names([], []).
+extract_names([player(_,Name)|Rest], [Name|Names]) :-
+    extract_names(Rest, Names).
 
 show_menu_options :-
     writeln('  1. Novo Jogo (2 Jogadores)'),

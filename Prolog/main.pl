@@ -3,6 +3,7 @@
 :- use_module(persistence).
 :- use_module(utils).
 :- use_module(small_board).
+:- encoding(utf8).
 
 main :-
     repeat,
@@ -11,8 +12,8 @@ main :-
     show_menu_options,
     read_line_to_string(user_input, Option),
     process_menu_option(Option),
-    (Option == "6" ; Option == "1" ; Option == "2" ; Option == "3"), !, % Condições que param o loop
-    (Option == "6" -> true ; main).
+    ( Option == "6" ; Option == "1" ; Option == "2" ; Option == "3" ; Option == "4" ; Option == "5" ), !,
+    ( Option == "6" -> true ; main).
 
 % Processa a escolha do usuário.
 process_menu_option("1") :- start_new_game(pvp), game_loop.
