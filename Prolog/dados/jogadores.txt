@@ -1,2 +1,4 @@
-//corrgir persistencia, ranking acessar esse arquivo e guardar aqui os potnos de vitoria
-//nome é identificação unica no sistema
+player("elefante",0).
+player("Bola",0).
+player("Arroba",0).
+player("Cerquinha",0).

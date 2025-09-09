@@ -3,7 +3,7 @@
             load_game/0,
             show_ranking/0,
             update_ranking/1,
-            register_player/2,
+            register_player/1,
             clear_players/0
           ]).
 
@@ -40,39 +40,6 @@ read_file_to_state(Stream) :-
     ( Term == end_of_file -> true
     ; retractall(Term), assertz(Term), read_file_to_state(Stream) ).
 
-update_ranking(WinnerName) :-
-    ( WinnerName == 'Bot' -> true
-    ; ensure_directory_exists('dados/'),
-      ( exists_file('dados/ranking.txt') -> read_file_to_terms('dados/ranking.txt', R) ; R = [] ),
-      ( member(player(WinnerName, W), R) ->
-          NewW is W + 1,
-          select(player(WinnerName, W), R, TR),
-          NR = [player(WinnerName, NewW) | TR]
-      ; NR = [player(WinnerName, 1) | R] ),
-      open('dados/ranking.txt', write, S), write_ranking(S, NR), close(S)
-    ).
-
-show_ranking :-
-    clear_screen,
-    writeln("==========================="),
-    writeln("      RANKING TOP 5"),
-    writeln("===========================\n"),
-    ( exists_file('dados/ranking.txt') ->
-        read_file_to_terms('dados/ranking.txt', R),
-        predsort(compare_scores, R, SR),
-        print_top_5(SR, 1)
-    ; writeln("Nenhum(a) jogador(a) registrado(a) ainda.\n") ).
-
-compare_scores(Delta, player(_, W1), player(_, W2)) :-
-    compare(Delta, W2, W1).  
-
-print_top_5([], _).
-print_top_5(_, 6).
-print_top_5([player(Name, Wins) | T], N) :-
-    format('~d. ~w - ~d vitórias\n', [N, Name, Wins]),
-    N1 is N + 1,
-    print_top_5(T, N1).
-
 ensure_players_file :-
     ensure_directory_exists('dados/'),
     ( exists_file('dados/jogadores.txt') -> true
@@ -84,8 +51,8 @@ load_players(Players) :-
 
 save_players(Players) :-
     open('dados/jogadores.txt', write, S),
-    forall(member(player(Name), Players),
-           ( write_term(S, player(Name), [quoted(true)]),
+    forall(member(player(Name, Score), Players),
+           ( write_term(S, player(Name, Score), [quoted(true)]),
              write(S, '.\n'))),
     close(S).
 
@@ -93,27 +60,49 @@ clear_players :-
     ensure_players_file,
     open('dados/jogadores.txt', write, S), close(S).
 
-% Registra jogador garantindo unicidade
-register_player(BaseName, UniqueName) :-
-    ( string_upper(BaseName, "BOT") ->
-        writeln('⚠ O nome "Bot" é reservado e não pode ser escolhido por jogadores humanos.'),
-        fail
-    ; true ),
+% Registra novo jogador com 0 pontos (se não existir ainda)
+register_player(Name) :-
+    string_upper(Name, Upper), Upper == "BOT", !,
+    writeln('⚠ O nome "Bot" é reservado e não pode ser usado por jogadores humanos.'),
+    fail.
+register_player(Name) :-
     load_players(Players),
-    generate_unique_name(BaseName, Players, UniqueName),
-    ( BaseName == UniqueName ->
-        true
-    ; format('⚠ O nome "~w" já existe. Seu nome será ajustado para "~w".~n', [BaseName, UniqueName]) ),
-    save_players([player(UniqueName) | Players]).
+    ( member(player(Name, _), Players) ->
+        true % já registrado
+    ; save_players([player(Name, 0) | Players])
+    ).
 
-generate_unique_name(Name, Players, UniqueName) :-
-    ( member(player(Name), Players) ->
-        find_unique_suffix(Name, 2, Players, UniqueName)
-    ; UniqueName = Name ).
+% Atualiza pontuação do vencedor
+update_ranking(WinnerName) :-
+    WinnerName == 'Bot', !. 
+update_ranking(WinnerName) :-
+    load_players(Players),
+    ( select(player(WinnerName, OldScore), Players, Rest) ->
+        NewScore is OldScore + 1,
+        NewPlayers = [player(WinnerName, NewScore) | Rest]
+    ; NewPlayers = [player(WinnerName, 1) | Players]
+    ),
+    save_players(NewPlayers).
 
-find_unique_suffix(Base, N, Players, Unique) :-
-    atomic_list_concat([Base, N], Unique),
-    ( member(player(Unique), Players) ->
-        N1 is N + 1,
-        find_unique_suffix(Base, N1, Players, Unique)
-    ; true ).
+% Exibe o top 5 do ranking
+show_ranking :-
+    clear_screen,
+    writeln("==========================="),
+    writeln("      RANKING TOP 5"),
+    writeln("===========================\n"),
+    ( load_players(Players),
+      Players \= [] ->
+        predsort(compare_scores, Players, Sorted),
+        print_top_5(Sorted, 1)
+    ; writeln("Nenhum(a) jogador(a) registrado(a) ainda.\n")
+    ).
+
+compare_scores(Delta, player(_, S1), player(_, S2)) :-
+    compare(Delta, S2, S1). % ordena decrescente
+
+print_top_5([], _).
+print_top_5(_, 6).
+print_top_5([player(Name, Score) | T], N) :-
+    format('~d. ~w - ~d pontos\n', [N, Name, Score]),
+    N1 is N + 1,
+    print_top_5(T, N1).

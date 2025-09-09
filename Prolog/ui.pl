@@ -127,14 +127,14 @@ print_characters([char(Symbol, Name)|Rest], Index) :-
 
 choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     available_characters(Chars),
-    repeat,  % garante repetição até sucesso
+    repeat, 
     format("Jogador(a) ~w, escolha seu símbolo:~n", [PlayerNum]),
     print_characters(Chars, 1),
     writeln(""),
     write("> Símbolo: "),
     read_line_to_string(user_input, ChoiceStr),
     (   catch(number_string(Choice, ChoiceStr), _, fail),
-        nth1(Choice, Chars, char(Symbol, DefaultName))  % ✅ símbolo válido
+        nth1(Choice, Chars, char(Symbol, DefaultName))
     ->  true
     ;   writeln("⚠️ Opção inválida. Escolha um número de 1 a 6."), fail
     ),
@@ -151,7 +151,8 @@ choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
 
     extract_names(ExistingPlayers, UsedNames),
     generate_unique_name(RawName, UsedNames, FinalName),
-    !.  % sai do repeat quando der certo
+    register_player(FinalName),
+    !. 
 
 generate_unique_name(Base, Used, Unique) :-
     ( member(Base, Used) ->
