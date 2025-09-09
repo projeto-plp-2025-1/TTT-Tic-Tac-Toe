@@ -110,9 +110,6 @@ show_scoreboard :-
     format('~w [~w]: ~d\n', [N2, S2, W2]),
     writeln('----------------------------------').
 
-% ================================
-% Personagens disponíveis
-% ================================
 available_characters([
     char('X',"Xis"),
     char('O',"Bola"),
@@ -130,11 +127,17 @@ print_characters([char(Symbol, Name)|Rest], Index) :-
 
 choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     available_characters(Chars),
+    repeat,  % garante repetição até sucesso
     format("Jogador(a) ~w, escolha seu símbolo:~n", [PlayerNum]),
     print_characters(Chars, 1),
+    writeln(""),
+    write("> Símbolo: "),
     read_line_to_string(user_input, ChoiceStr),
-    catch(number_string(Choice, ChoiceStr), _, fail),
-    nth1(Choice, Chars, char(Symbol, DefaultName)),
+    (   catch(number_string(Choice, ChoiceStr), _, fail),
+        nth1(Choice, Chars, char(Symbol, DefaultName))  % ✅ símbolo válido
+    ->  true
+    ;   writeln("⚠️ Opção inválida. Escolha um número de 1 a 6."), fail
+    ),
 
     format("Digite seu nome (ou pressione ENTER para usar \"~w\"): ", [DefaultName]),
     read_line_to_string(user_input, InputName),
@@ -142,13 +145,13 @@ choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     ( InputName == "" -> RawName = DefaultName
     ; string_upper(InputName, Upper), Upper == "BOT" ->
         writeln("⚠️ O nome \"Bot\" é reservado. Escolha outro."),
-        choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName))
+        fail
     ; RawName = InputName
     ),
 
-    % garantir nome único
     extract_names(ExistingPlayers, UsedNames),
-    generate_unique_name(RawName, UsedNames, FinalName).
+    generate_unique_name(RawName, UsedNames, FinalName),
+    !.  % sai do repeat quando der certo
 
 generate_unique_name(Base, Used, Unique) :-
     ( member(Base, Used) ->

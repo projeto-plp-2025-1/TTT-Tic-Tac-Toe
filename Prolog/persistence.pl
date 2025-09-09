@@ -11,9 +11,6 @@
 :- use_module(utils).
 :- encoding(utf8).
 
-% ================================
-% Persistência do jogo
-% ================================
 save_game :-
     ensure_directory_exists('dados/'),
     open('dados/salvo.txt', write, Stream),
@@ -43,9 +40,6 @@ read_file_to_state(Stream) :-
     ( Term == end_of_file -> true
     ; retractall(Term), assertz(Term), read_file_to_state(Stream) ).
 
-% ================================
-% Ranking
-% ================================
 update_ranking(WinnerName) :-
     ( WinnerName == 'Bot' -> true
     ; ensure_directory_exists('dados/'),
@@ -79,9 +73,6 @@ print_top_5([player(Name, Wins) | T], N) :-
     N1 is N + 1,
     print_top_5(T, N1).
 
-% ================================
-% Registro de jogadores
-% ================================
 ensure_players_file :-
     ensure_directory_exists('dados/'),
     ( exists_file('dados/jogadores.txt') -> true

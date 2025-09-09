@@ -1,6 +1,6 @@
-player1(player('O',"Bola")).
+player1(player(#,"Cerquinha")).
 player2(player('X','Bot')).
-current_player(player('O',"Bola")).
+current_player(player(#,"Cerquinha")).
 board([e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e]).
 winner_board([p,p,p,p,p,p,p,p,p]).
 next_quadrant(any).

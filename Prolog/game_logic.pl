@@ -16,16 +16,12 @@
     board/1, winner_board/1, current_player/1, player1/1, player2/1,
     next_quadrant/1, p1_small_wins/1, p2_small_wins/1, game_mode/1.
 
-% ================== LOOP PRINCIPAL ==================
-
 game_loop :-
     display_game_state,
     (   get_move(Quadrant, Cell) ->
         apply_move(Quadrant, Cell),
         ( is_game_over -> true ; (switch_player, game_loop) )
     ;   switch_player, game_loop ).
-
-% ================== MOVIMENTOS ==================
 
 get_move(Quadrant, Cell) :-
     current_player(player(Symbol, Name)),
@@ -52,7 +48,6 @@ handle_quadrant_input("SALVAR", NextQ, Quadrant) :-
     save_game,
     writeln('...'),
     sleep(1),
-    % volta a perguntar o quadrante, não interrompe o jogo
     prompt_for_quadrant(NextQ, Quadrant).
 
 handle_quadrant_input("", NextQ, Quadrant) :-
@@ -69,8 +64,6 @@ handle_quadrant_input(_, NextQ, Quadrant) :-
     writeln('! Quadrante inválido ou não permitido. Tente novamente.'),
     sleep(1),
     prompt_for_quadrant(NextQ, Quadrant).
-
-% ================== APLICA MOVIMENTO ==================
 
 apply_move(Quadrant, Cell) :-
     current_player(player(Symbol, _)),
@@ -94,8 +87,6 @@ check_mini_board_winner(Board, Quadrant, Symbol) :-
     retract(winner_board(_)), assertz(winner_board(NewWinnerBoard)).
 check_mini_board_winner(_, _, _).
 
-% ================== FIM DE JOGO ==================
-
 is_game_over :-
     winner_board(WB), current_player(player(Symbol, Name)),
     (   check_win(WB, Symbol) ->
@@ -104,8 +95,6 @@ is_game_over :-
         press_enter_to_continue, !, true
     ;   check_draw(WB) ->
         ui:show_draw_art, press_enter_to_continue, !, true ).
-
-% ================== BOT ==================
 
 get_bot_move(Quadrant, Cell) :-
     writeln('\nTurno do Bot. Pensando...'), sleep(2),
@@ -164,8 +153,6 @@ preferred_cell(3).
 preferred_cell(5).
 preferred_cell(7).
 
-% ================== INICIALIZAÇÃO ==================
-
 start_new_game(Mode) :-
     retractall(game_mode(_)), assertz(game_mode(Mode)),
     clear_screen,
@@ -174,12 +161,26 @@ start_new_game(Mode) :-
     assertz(player1(P1)),
     ( Mode == pve ->
         opponent_symbol(BotSymbol),
-        P2 = player(BotSymbol, 'Bot')
+        P2 = player(BotSymbol, 'Bot'),
+        assertz(player2(P2))
     ;
         writeln('--- JOGADOR(A) 2 ---'),
-        choose_player(2, [P1], P2)
+        choose_player(2, [P1], P2),
+        assertz(player2(P2))
     ),
-    initialize_game_state(P1, P2).
+
+    % Mostrar resumo antes do tabuleiro
+    P1 = player(S1, N1),
+    player2(P2A), P2A = player(S2, N2),
+
+    writeln(''),
+    writeln('======= Configuração do Jogo ======='),
+    format('Jogador(a) 1: ~w [~w]~n', [N1, S1]),
+    format('Jogador(a) 2: ~w [~w]~n', [N2, S2]),
+    writeln('===================================='),
+    sleep(2),
+
+    initialize_game_state(P1, P2A).
 
 opponent_symbol(Symbol) :-
     player1(player(S1,_)),
