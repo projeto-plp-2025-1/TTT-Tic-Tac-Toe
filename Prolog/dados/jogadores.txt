@@ -1,3 +1,14 @@
+player("Xis2",0).
+player("2",0).
+player("Xis",0).
+player("Bola2",0).
+player("3",0).
+player("12",0).
+player("1",0).
+player("5",0).
+player("E-Comercial",0).
+player("Porcento",0).
+player("xis",0).
 player("elefante",0).
 player("Bola",0).
 player("Arroba",0).

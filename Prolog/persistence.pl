@@ -1,10 +1,10 @@
 :- module(persistence,
           [ save_game/0,
             load_game/0,
-            show_ranking/0,
-            update_ranking/1,
             register_player/1,
-            clear_players/0
+            clear_players/0,
+            update_ranking/1,
+            show_ranking/0
           ]).
 
 :- use_module(game_logic).
@@ -24,26 +24,30 @@ save_game :-
     p2_small_wins(W2), write_term(Stream, p2_small_wins(W2), [quoted(true)]), write(Stream, '.\n'),
     game_mode(M), write_term(Stream, game_mode(M), [quoted(true)]), write(Stream, '.\n'),
     close(Stream),
-    writeln('Jogo salvo com sucesso! Retornando ao menu...'), sleep(2).
+    writeln('✅ Jogo salvo com sucesso!').
 
 load_game :-
     exists_file('dados/salvo.txt'), !,
     open('dados/salvo.txt', read, Stream),
     read_file_to_state(Stream),
     close(Stream),
-    writeln('Jogo carregado com sucesso!'), sleep(2).
+    writeln('✅ Jogo carregado com sucesso!').
 load_game :-
-    writeln('Nenhum jogo salvo encontrado.'), sleep(2), fail.
+    writeln('⚠️ Nenhum jogo salvo encontrado.'), fail.
 
 read_file_to_state(Stream) :-
     read_term(Stream, Term, []),
     ( Term == end_of_file -> true
-    ; retractall(Term), assertz(Term), read_file_to_state(Stream) ).
+    ; retractall(Term), assertz(Term), read_file_to_state(Stream)
+    ).
+
+% arquivo do jogo
 
 ensure_players_file :-
     ensure_directory_exists('dados/'),
     ( exists_file('dados/jogadores.txt') -> true
-    ; open('dados/jogadores.txt', write, S), close(S) ).
+    ; open('dados/jogadores.txt', write, S), close(S)
+    ).
 
 load_players(Players) :-
     ensure_players_file,
@@ -60,21 +64,17 @@ clear_players :-
     ensure_players_file,
     open('dados/jogadores.txt', write, S), close(S).
 
-% Registra novo jogador com 0 pontos (se não existir ainda)
 register_player(Name) :-
     string_upper(Name, Upper), Upper == "BOT", !,
     writeln('⚠ O nome "Bot" é reservado e não pode ser usado por jogadores humanos.'),
     fail.
 register_player(Name) :-
     load_players(Players),
-    ( member(player(Name, _), Players) ->
-        true % já registrado
+    ( member(player(Name, _), Players) -> true  % já registrado
     ; save_players([player(Name, 0) | Players])
     ).
 
-% Atualiza pontuação do vencedor
-update_ranking(WinnerName) :-
-    WinnerName == 'Bot', !. 
+update_ranking('Bot') :- !.  % bot não recebe pontos
 update_ranking(WinnerName) :-
     load_players(Players),
     ( select(player(WinnerName, OldScore), Players, Rest) ->
@@ -84,7 +84,6 @@ update_ranking(WinnerName) :-
     ),
     save_players(NewPlayers).
 
-% Exibe o top 5 do ranking
 show_ranking :-
     clear_screen,
     writeln("==========================="),
@@ -98,7 +97,7 @@ show_ranking :-
     ).
 
 compare_scores(Delta, player(_, S1), player(_, S2)) :-
-    compare(Delta, S2, S1). % ordena decrescente
+    compare(Delta, S2, S1).  % ordena decrescente
 
 print_top_5([], _).
 print_top_5(_, 6).
