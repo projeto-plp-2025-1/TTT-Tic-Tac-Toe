@@ -1,11 +1,6 @@
-player("Xis",5).
+player("Xis",6).
 player("Xis2",0).
-player("2",0).
 player("Bola2",0).
-player("3",0).
-player("12",0).
-player("1",0).
-player("5",0).
 player("E-Comercial",0).
 player("Porcento",0).
 player("xis",3).

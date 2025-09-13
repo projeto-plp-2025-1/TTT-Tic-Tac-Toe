@@ -102,17 +102,28 @@ show_scoreboard :-
 choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     available_characters(Chars),
     extract_symbols(ExistingPlayers, UsedSymbols),
+    get_available_symbols(Chars, UsedSymbols, AvailableSymbols),
     repeat, 
     format("Jogador(a) ~w, escolha seu símbolo:~n", [PlayerNum]),
     print_characters(Chars, 1),
     writeln(""),
-    write("> Símbolo: "),
+    write("> Símbolo (ENTER para X ou O): "),
     read_line_to_string(user_input, ChoiceStr),
-
-    (   catch(number_string(Choice, ChoiceStr), _, fail),
-        nth1(Choice, Chars, char(Symbol, DefaultName)),   
-        \+ member(Symbol, UsedSymbols)                 
-    ->  true
+    (
+    (ChoiceStr == "" ->
+        (   member('X', AvailableSymbols) -> 
+            Symbol = 'X',
+            get_default_name('X', Chars, DefaultName)
+        ;   member('O', AvailableSymbols) ->
+            Symbol = 'O', 
+            get_default_name('O', Chars, DefaultName)
+        ;   writeln("⚠️ Nenhum símbolo padrão disponível. Escolha um."),
+            fail
+        )
+    ;   catch(number_string(Choice, ChoiceStr), _, fail),
+        nth1(Choice, Chars, char(Symbol, DefaultName)),
+        \+ member(Symbol, UsedSymbols)
+    ) -> true
     ;   writeln("⚠️ Opção inválida ou símbolo já escolhido. Tente novamente."),
         fail
     ),
@@ -131,7 +142,14 @@ choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     extract_names(ExistingPlayers, UsedNames),
     generate_unique_name(BaseName, UsedNames, FinalName),
     register_player(FinalName), 
-    !. 
+    !.
+
+
+get_available_symbols(Chars, UsedSymbols, AvailableSymbols) :-
+    findall(Sym, (member(char(Sym, _), Chars), \+ member(Sym, UsedSymbols)), AvailableSymbols).
+
+get_default_name(Symbol, Chars, DefaultName) :-
+    member(char(Symbol, DefaultName), Chars).
 
 generate_unique_name(Base, Used, Unique) :-
     ( member(Base, Used) ->
