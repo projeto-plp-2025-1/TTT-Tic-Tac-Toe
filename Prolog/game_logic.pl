@@ -77,24 +77,47 @@ apply_move(Quadrant, Cell) :-
 check_mini_board_winner(Board, Quadrant, Symbol) :-
     winner_board(OldWinnerBoard), nth0(Quadrant, OldWinnerBoard, 'p'), !,
     get_mini_board(Board, Quadrant, MiniBoard),
+    current_player(player(_, Name)),
     (   check_win(MiniBoard, Symbol) ->
         replace(OldWinnerBoard, Quadrant, Symbol, NewWinnerBoard),
-        update_scores, writeln('** Você conquistou um quadrante! **'), sleep(1)
+        update_scores,
+        ( Name == 'Bot' -> 
+            writeln('** Bot conquistou um quadrante! **')
+        ; 
+            writeln('** Você conquistou um quadrante! **')
+        ),
+        sleep(1)
     ;   check_draw(MiniBoard) ->
         replace(OldWinnerBoard, Quadrant, 'd', NewWinnerBoard),
         writeln('** Quadrante empatado! **'), sleep(1)
     ;   NewWinnerBoard = OldWinnerBoard ),
     retract(winner_board(_)), assertz(winner_board(NewWinnerBoard)).
-check_mini_board_winner(_, _, _).
+
 
 is_game_over :-
-    winner_board(WB), current_player(player(Symbol, Name)),
-    (   check_win(WB, Symbol) ->
-        ui:show_winner_art(Name),
-        ( Name \= 'Bot' -> update_ranking(Name) ; true ),
+    winner_board(WB),
+    current_player(player(_, Name)),
+    (   check_win(WB, Symbol) ->  % Algum símbolo venceu
+        % Descobrir quem é o vencedor
+        (   player1(player(Symbol, WinnerName)) ->
+            Vencedor = WinnerName
+        ;   player2(player(Symbol, WinnerName)) ->
+            Vencedor = WinnerName
+        ),
+        ( Vencedor \= 'Bot' ->
+            ui:show_winner_art(Vencedor)  % humano venceu
+        ; 
+            % O bot venceu: mostrar derrota para o humano
+            player1(player(_, HumanName)),
+            ui:show_loser_art(HumanName)
+        ),
+        ( Vencedor \= 'Bot' -> update_ranking(Vencedor) ; true ),
         press_enter_to_continue, !, true
-    ;   check_draw(WB) ->
-        ui:show_draw_art, press_enter_to_continue, !, true ).
+    ;   check_draw(WB) -> 
+        ui:show_draw_art,
+        press_enter_to_continue, !, true
+    ).
+
 
 get_bot_move(Quadrant, Cell) :-
     writeln('\nTurno do Bot. Pensando...'), sleep(2),
