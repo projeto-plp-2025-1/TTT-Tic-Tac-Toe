@@ -10,6 +10,7 @@ main :-
     clear_screen,
     show_title_art,
     show_menu_options,
+    clear_game_state,
     read_line_to_string(user_input, Option),
     process_menu_option(Option),
     ( Option == "6" ; Option == "1" ; Option == "2" ; Option == "3" ; Option == "4" ; Option == "5" ), !,

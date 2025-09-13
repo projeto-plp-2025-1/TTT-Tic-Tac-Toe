@@ -1,9 +1,9 @@
 player1(player('X',"Xis")).
 player2(player('O',"Bola")).
-current_player(player('O',"Bola")).
-board(['X',e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e]).
+current_player(player('X',"Xis")).
+board([e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e]).
 winner_board([p,p,p,p,p,p,p,p,p]).
-next_quadrant(0).
+next_quadrant(any).
 p1_small_wins(0).
 p2_small_wins(0).
 game_mode(pvp).

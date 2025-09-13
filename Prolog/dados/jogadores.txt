@@ -8,8 +8,8 @@ player("1",0).
 player("5",0).
 player("E-Comercial",0).
 player("Porcento",0).
-player("xis",0).
-player("elefante",0).
-player("Bola",0).
-player("Arroba",0).
+player("xis",3).
+player("elefante",3).
+player("Bola",2).
+player("Arroba",1).
 player("Cerquinha",0).
