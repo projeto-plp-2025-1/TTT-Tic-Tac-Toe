@@ -1,6 +1,6 @@
+player("Xis",2).
 player("Xis2",0).
 player("2",0).
-player("Xis",0).
 player("Bola2",0).
 player("3",0).
 player("12",0).

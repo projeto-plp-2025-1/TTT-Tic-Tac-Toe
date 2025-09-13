@@ -1,9 +1,9 @@
 player1(player('X',"Xis")).
 player2(player('O','Bot')).
 current_player(player('X',"Xis")).
-board(['O','X','X','O',e,e,'O',e,e,e,'X','X',e,'O',e,e,'X',e,'X','O',e,e,e,'O',e,e,e,e,e,e,'X','X','O','X',e,e,e,'O',e,e,'O',e,'X',e,e,e,e,e,'O',e,e,'X',e,e,'O',e,e,'O','X',e,e,e,e,e,'O',e,e,'O',e,e,'X',e,e,'X',e,e,e,e,e,e,e]).
-winner_board(['X','O',p,p,'O','X',p,p,p]).
-next_quadrant(any).
-p1_small_wins(2).
-p2_small_wins(2).
+board([e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,'X',e,e,e,e,e,e,e,'O','X',e,e,e,e,e,e,e,e,'O']).
+winner_board(['X','X','O','O','O','X','X','X',p]).
+next_quadrant(8).
+p1_small_wins(6).
+p2_small_wins(4).
 game_mode(pve).

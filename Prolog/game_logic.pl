@@ -93,21 +93,18 @@ check_mini_board_winner(Board, Quadrant, Symbol) :-
     ;   NewWinnerBoard = OldWinnerBoard ),
     retract(winner_board(_)), assertz(winner_board(NewWinnerBoard)).
 
-
 is_game_over :-
     winner_board(WB),
     current_player(player(_, Name)),
-    (   check_win(WB, Symbol) ->  % Algum símbolo venceu
-        % Descobrir quem é o vencedor
+    (   check_win(WB, Symbol) -> 
         (   player1(player(Symbol, WinnerName)) ->
             Vencedor = WinnerName
         ;   player2(player(Symbol, WinnerName)) ->
             Vencedor = WinnerName
         ),
         ( Vencedor \= 'Bot' ->
-            ui:show_winner_art(Vencedor)  % humano venceu
+            ui:show_winner_art(Vencedor)
         ; 
-            % O bot venceu: mostrar derrota para o humano
             player1(player(_, HumanName)),
             ui:show_loser_art(HumanName)
         ),
@@ -118,6 +115,22 @@ is_game_over :-
         press_enter_to_continue, !, true
     ).
 
+handle_winner(WinnerPlayerID) :-
+    get_player_name(WinnerPlayerID, WinnerName),
+    (   WinnerName \= 'Bot'
+    ->
+        ui:show_winner_art(WinnerName),
+        update_ranking(WinnerName)
+    ;
+        other_player(HumanPlayer),
+        get_player_name(HumanPlayer, HumanName),
+        ui:show_loser_art(HumanName)
+    ),
+    press_enter_to_continue.
+
+handle_draw :-
+    ui:show_draw_art,
+    press_enter_to_continue.
 
 get_bot_move(Quadrant, Cell) :-
     writeln('\nTurno do Bot. Pensando...'), sleep(2),
