@@ -1,4 +1,4 @@
-player("Xis",2).
+player("Xis",5).
 player("Xis2",0).
 player("2",0).
 player("Bola2",0).

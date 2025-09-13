@@ -22,7 +22,6 @@
             set_char_at/5,
             replace_nth/4,
             clear_game_state/0,    
-            check_draw_with_scores/3,
             get_winner_by_score/1,
             get_player_name/2,
             get_player_symbol/2,
@@ -129,7 +128,6 @@ check_draw(B) :-
 get_winner_by_score(Winner) :-
     p1_small_wins(Score1),
     p2_small_wins(Score2),
-    current_player(CurrentPlayer),
     player1(P1),
     player2(P2),
     (   Score1 > Score2 -> Winner = P1
