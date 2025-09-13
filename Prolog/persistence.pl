@@ -113,9 +113,6 @@ sort_players(Players, Sorted) :-
 has_unique_name(Names, player(Name, _)) :-
     memberchk(Name, Names).
 
-compare_scores(Delta, player(, S1), player(, S2)) :-
-    compare(Delta, S2, S1).  % decrescente
-
 print_top_5([], _).
 print_top_5(_, 6).
 print_top_5([player(Name, Score) | T], N) :-

@@ -21,8 +21,14 @@
             print_lines/1,
             set_char_at/5,
             replace_nth/4,
-            clear_game_state/0
+            clear_game_state/0,    
+            check_draw_with_scores/3,
+            get_winner_by_score/1,
+            get_player_name/2,
+            get_player_symbol/2,
+            other_player/1
           ]).
+
 :- use_module(game_logic).
 :- encoding(utf8).
 
@@ -120,6 +126,16 @@ check_draw(B) :-
     \+ member('e', B),
     \+ member('p', B).
 
+get_winner_by_score(Winner) :-
+    p1_small_wins(Score1),
+    p2_small_wins(Score2),
+    current_player(CurrentPlayer),
+    player1(P1),
+    player2(P2),
+    (   Score1 > Score2 -> Winner = P1
+    ;   Score2 > Score1 -> Winner = P2
+    ;   Winner = draw
+    ).
 
 % --- Player Setup ---
 
@@ -138,6 +154,15 @@ print_characters([char(Symbol, Name)|Rest], Index) :-
     NextIndex is Index + 1,
     print_characters(Rest, NextIndex).
 
+other_player(OtherPlayer) :-
+    current_player(Current),
+    player1(P1),
+    player2(P2),
+    ( Current == P1 -> OtherPlayer = P2 ; OtherPlayer = P1 ).
+
+get_player_name(player(_, Name), Name).
+
+get_player_symbol(player(Symbol, _), Symbol).
 
 % --- Input Parsing ---
 

@@ -88,13 +88,32 @@ check_mini_board_winner(Board, Quadrant, Symbol) :-
 check_mini_board_winner(_, _, _).
 
 is_game_over :-
-    winner_board(WB), current_player(player(Symbol, Name)),
+    winner_board(WB), 
+    current_player(CurrentPlayer),
+    other_player(OtherPlayer),
+    current_player(player(Symbol, _)),
     (   check_win(WB, Symbol) ->
-        ui:show_winner_art(Name),
-        ( Name \= 'Bot' -> update_ranking(Name) ; true ),
+        get_player_name(CurrentPlayer, WinnerName),
+        ui:show_winner_art(WinnerName),
+        ( WinnerName \= 'Bot' -> update_ranking(WinnerName) ; true ),
+        press_enter_to_continue, !, true
+    ;   check_win(WB, OtherSymbol) ->  % ← IMPORTANTE: Verificar vitória do outro jogador também!
+        get_player_symbol(OtherPlayer, OtherSymbol),
+        get_player_name(OtherPlayer, WinnerName),
+        ui:show_winner_art(WinnerName),
+        ( WinnerName \= 'Bot' -> update_ranking(WinnerName) ; true ),
         press_enter_to_continue, !, true
     ;   check_draw(WB) ->
-        ui:show_draw_art, press_enter_to_continue, !, true ).
+        get_winner_by_score(Winner),
+        (   Winner == draw ->
+            ui:show_draw_art, press_enter_to_continue, !, true
+        ;   get_player_name(Winner, WinnerName),
+            ui:show_winner_art(WinnerName),
+            ( WinnerName \= 'Bot' -> update_ranking(WinnerName) ; true ),
+            press_enter_to_continue, !, true
+        )
+    ).
+
 
 get_bot_move(Quadrant, Cell) :-
     writeln('\nTurno do Bot. Pensando...'), sleep(2),
