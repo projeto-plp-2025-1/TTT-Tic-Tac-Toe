@@ -89,15 +89,32 @@ show_ranking :-
     writeln("==========================="),
     writeln("      RANKING TOP 5"),
     writeln("===========================\n"),
-    ( load_players(Players),
-      Players \= [] ->
-        predsort(compare_scores, Players, Sorted),
-        print_top_5(Sorted, 1)
-    ; writeln("Nenhum(a) jogador(a) registrado(a) ainda.\n")
+    load_players(Players),
+    ( Players == [] ->
+        writeln("❌ Não há jogadores cadastrados no sistema.\n")
+    ; include(has_points, Players, NonZero),
+      ( NonZero == [] ->
+          writeln("ℹ Jogadores cadastrados no sistema sem vitórias.\n")
+      ; sort_players(NonZero, UniqueSorted),
+        print_top_5(UniqueSorted, 1)
+      )
     ).
 
-compare_scores(Delta, player(_, S1), player(_, S2)) :-
-    compare(Delta, S2, S1).  % ordena decrescente
+has_points(player(_, Score)) :-
+    Score > 0.
+
+sort_players(Players, Sorted) :-
+    % Remove duplicatas pelo nome (fica só o maior score)
+    sort(2, @>=, Players, SortedDesc), % primeiro ordena decrescente por Score
+    maplist(arg(1), SortedDesc, Names), % pega só os nomes
+    list_to_set(Names, UniqueNames),   % remove duplicados de nome
+    include(has_unique_name(UniqueNames), SortedDesc, Sorted).
+
+has_unique_name(Names, player(Name, _)) :-
+    memberchk(Name, Names).
+
+compare_scores(Delta, player(, S1), player(, S2)) :-
+    compare(Delta, S2, S1).  % decrescente
 
 print_top_5([], _).
 print_top_5(_, 6).
