@@ -77,43 +77,63 @@ apply_move(Quadrant, Cell) :-
 check_mini_board_winner(Board, Quadrant, Symbol) :-
     winner_board(OldWinnerBoard), nth0(Quadrant, OldWinnerBoard, 'p'), !,
     get_mini_board(Board, Quadrant, MiniBoard),
+    current_player(player(_, Name)),
     (   check_win(MiniBoard, Symbol) ->
         replace(OldWinnerBoard, Quadrant, Symbol, NewWinnerBoard),
-        update_scores, writeln('** Você conquistou um quadrante! **'), sleep(1)
+        update_scores,
+        ( Name == 'Bot' -> 
+            writeln('** Bot conquistou um quadrante! **')
+        ; 
+            writeln('** Você conquistou um quadrante! **')
+        ),
+        sleep(1)
     ;   check_draw(MiniBoard) ->
         replace(OldWinnerBoard, Quadrant, 'd', NewWinnerBoard),
         writeln('** Quadrante empatado! **'), sleep(1)
     ;   NewWinnerBoard = OldWinnerBoard ),
     retract(winner_board(_)), assertz(winner_board(NewWinnerBoard)).
-check_mini_board_winner(_, _, _).
 
 is_game_over :-
     winner_board(WB), 
     current_player(CurrentPlayer),
     other_player(OtherPlayer),
-    current_player(player(Symbol, _)),
-    (   check_win(WB, Symbol) ->
+    get_player_symbol(CurrentPlayer, CurrentSymbol),
+    get_player_symbol(OtherPlayer, OtherSymbol),
+    
+    (   check_win(WB, CurrentSymbol) ->
         get_player_name(CurrentPlayer, WinnerName),
-        ui:show_winner_art(WinnerName),
+        (   WinnerName \= 'Bot' ->
+            ui:show_winner_art(WinnerName)  % Humano venceu - arte normal
+        ;   get_player_name(OtherPlayer, HumanName),
+            ui:show_loser_art(HumanName)    % Bot venceu - arte de derrota para humano
+        ),
         ( WinnerName \= 'Bot' -> update_ranking(WinnerName) ; true ),
         press_enter_to_continue, !, true
-    ;   check_win(WB, OtherSymbol) ->  % ← IMPORTANTE: Verificar vitória do outro jogador também!
-        get_player_symbol(OtherPlayer, OtherSymbol),
+    ;   check_win(WB, OtherSymbol) ->
         get_player_name(OtherPlayer, WinnerName),
-        ui:show_winner_art(WinnerName),
+        (   WinnerName \= 'Bot' ->
+            ui:show_winner_art(WinnerName)  % Humano venceu - arte normal
+        ;   get_player_name(CurrentPlayer, HumanName),
+            ui:show_loser_art(HumanName)    % Bot venceu - arte de derrota para humano
+        ),
         ( WinnerName \= 'Bot' -> update_ranking(WinnerName) ; true ),
         press_enter_to_continue, !, true
     ;   check_draw(WB) ->
         get_winner_by_score(Winner),
         (   Winner == draw ->
-            ui:show_draw_art, press_enter_to_continue, !, true
+            ui:show_draw_art,               % Empate real
+            press_enter_to_continue, !, true
         ;   get_player_name(Winner, WinnerName),
-            ui:show_winner_art(WinnerName),
+            (   WinnerName \= 'Bot' ->
+                ui:show_winner_art(WinnerName)  % Humano vence por pontos
+            ;   other_player(HumanPlayer),
+                get_player_name(HumanPlayer, HumanName),
+                ui:show_loser_art(HumanName)    % Bot vence por pontos - derrota humano
+            ),
             ( WinnerName \= 'Bot' -> update_ranking(WinnerName) ; true ),
             press_enter_to_continue, !, true
         )
     ).
-
 
 get_bot_move(Quadrant, Cell) :-
     writeln('\nTurno do Bot. Pensando...'), sleep(2),
