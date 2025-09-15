@@ -1,11 +1,2 @@
 player("Nicole",0).
-player("Xis",6).
-player("Xis2",0).
-player("Bola2",0).
-player("E-Comercial",0).
-player("Porcento",0).
-player("xis",3).
 player("elefante",3).
-player("Bola",2).
-player("Arroba",1).
-player("Cerquinha",0).
