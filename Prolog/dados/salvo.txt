@@ -1,1 +1,9 @@
-
+player1(player(&,"Bina")).
+player2(player('X','Bot')).
+current_player(player(&,"Bina")).
+board([e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e,e]).
+winner_board([p,p,p,p,p,p,p,p,p]).
+next_quadrant(any).
+p1_small_wins(0).
+p2_small_wins(0).
+game_mode(pve).
