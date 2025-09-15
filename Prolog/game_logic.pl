@@ -186,20 +186,55 @@ find_best_quad_from_list([_|Qs], WB, Bot, Opp, BestS, BestQSoFar, BestQ) :-
     find_best_quad_from_list(Qs, WB, Bot, Opp, BestS, BestQSoFar, BestQ).
 find_best_quad_from_list([], _, _, _, _, FinalBestQ, FinalBestQ).
 
-score_quadrant(Q, WB, Bot, _, 10) :- would_win_game(Q, WB, Bot), !.
-score_quadrant(Q, WB, _, Opp, 5) :- would_win_game(Q, WB, Opp), !.
-score_quadrant(_, _, _, _, 1).
+score_quadrant(Q, WB, Bot, _, 10) :- 
+    would_win_game(Q, WB, Bot), !.     % Bot pode ganhar
+
+score_quadrant(Q, WB, _, Opp, 5) :- 
+    would_win_game(Q, WB, Opp), !.     % Oponente pode ganhar
+
+score_quadrant(Q, _, _, Opp, Score) :-
+    board(B),
+    get_mini_board(B, Q, MiniBoard),
+    count_symbol(MiniBoard, Opp, CountOpp),
+    Score is 3 - CountOpp.             % quanto menos peças do adversário, maior score
+
+count_symbol(Board, Symbol, Count) :-
+    include(==(Symbol), Board, Filtered),
+    length(Filtered, Count).
 
 would_win_game(Q, WB, Symbol) :-
     replace(WB, Q, Symbol, TempWB),
     check_win(TempWB, Symbol).
 
-choose_best_cell(MiniBoard, Bot, _, Cell) :- find_winning_move(MiniBoard, Bot, Cell), !.
-choose_best_cell(MiniBoard, _, Opp, Cell) :- find_winning_move(MiniBoard, Opp, Cell), !.
-choose_best_cell(MiniBoard, _, _, Cell) :- preferred_cell(Cell), nth0(Cell, MiniBoard, 'e'), !.
-choose_best_cell(MiniBoard, _, _, Cell) :-
-    findall(C, nth0(C, MiniBoard, 'e'), Cs),
-    random_member(Cell, Cs).
+choose_best_cell(MiniBoard, Bot, _, Cell) :- 
+    find_winning_move(MiniBoard, Bot, Cell), !.   % Jogada vencedora
+
+choose_best_cell(MiniBoard, _, Opp, Cell) :- 
+    find_winning_move(MiniBoard, Opp, Cell), !.   % Bloqueio
+
+choose_best_cell(MiniBoard, Bot, Opp, Cell) :-
+    % Pega número de símbolos do adversário por posição
+    findall(I, nth0(I, MiniBoard, 'e'), EmptyPositions),
+    ( EmptyPositions \= [] ->
+        weighted_random_cell(MiniBoard, EmptyPositions, Cell)
+    ; 
+      findall(I, nth0(I, MiniBoard, 'e'), AllFree),
+      random_member(Cell, AllFree)
+    ).      % Probabilidade ponderada
+
+
+weighted_random_cell(MiniBoard, CandidateCells, Cell) :-
+    include({MiniBoard}/[I]>>nth0(I, MiniBoard, 'e'), CandidateCells, FreeCells),
+    FreeCells \= [], !,
+    random(0.0, 1.0, R),
+    (   R < 0.40 -> Preferred = [4]            % 40% meio
+    ;   R < 0.75 -> Preferred = [1,3,5,7]     % 35% laterais (0.40 -> 0.75)
+    ;   Preferred = [0,2,6,8]                  % 25% cantos (0.75 -> 1.0)
+    ),
+    include({FreeCells}/[I]>>member(I, FreeCells), Preferred, Valid),
+    ( Valid \= [] -> random_member(Cell, Valid)
+    ; random_member(Cell, FreeCells)
+    ).
 
 find_winning_move(Board, Symbol, Cell) :-
     winning_line(Line),
@@ -209,15 +244,6 @@ check_movable_line(B, S, [I1,I2,I3], I1) :- nth0(I1,B,'e'), nth0(I2,B,S), nth0(I
 check_movable_line(B, S, [I1,I2,I3], I2) :- nth0(I1,B,S), nth0(I2,B,'e'), nth0(I3,B,S).
 check_movable_line(B, S, [I1,I2,I3], I3) :- nth0(I1,B,S), nth0(I2,B,S), nth0(I3,B,'e').
 
-preferred_cell(4).
-preferred_cell(0).
-preferred_cell(2).
-preferred_cell(6).
-preferred_cell(8).
-preferred_cell(1).
-preferred_cell(3).
-preferred_cell(5).
-preferred_cell(7).
 
 start_new_game(Mode) :-
     retractall(game_mode(_)), assertz(game_mode(Mode)),
