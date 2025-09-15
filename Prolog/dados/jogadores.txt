@@ -1,0 +1,4 @@
+player("Bina",0).
+player("Nicole",0).
+player("elefante2",2).
+player("elefante",3).

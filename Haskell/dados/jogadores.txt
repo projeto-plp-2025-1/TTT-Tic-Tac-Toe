@@ -1,3 +1,4 @@
+Jogador {nome = "XIS1", vitorias = 0}
 Jogador {nome = "SORRISO", vitorias = 1}
 Jogador {nome = "Big O", vitorias = 2}
 Jogador {nome = "XIS", vitorias = 3}
