@@ -220,7 +220,12 @@ write_ranking(Stream, [H|T]) :-
     write_ranking(Stream, T).
 
 clear_screen :-
-    write('\e[2J\e[H').
+    current_prolog_flag(windows, true),  % se estiver no Windows
+    !,
+    process_create(path(cmd), ['/c', 'cls'], []).
+clear_screen :-
+    % caso contrário, assume Unix/Linux/macOS
+    process_create(path('clear'), [], []).
 
 press_enter_to_continue :-
     nl,

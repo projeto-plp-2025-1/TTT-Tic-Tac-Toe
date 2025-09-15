@@ -19,9 +19,31 @@
 game_loop :-
     display_game_state,
     (   get_move(Quadrant, Cell) ->
-        apply_move(Quadrant, Cell),
-        ( is_game_over -> true ; (switch_player, game_loop) )
-    ;   switch_player, game_loop ).
+        handle_move(Quadrant, Cell)
+    ;   % Este 'else' trata o caso de o jogador ficar sem tempo.
+        writeln('Tempo esgotado! Passando a vez...'),
+        sleep(2),
+        switch_player,
+        game_loop
+    ).
+
+handle_move(quit, _) :- % Caso 1: O jogador saiu na tela de quadrantes.
+    writeln('Partida encerrada. Retornando ao menu principal...'),
+    sleep(2). 
+
+handle_move(_, quit) :- % Caso 2: O jogador saiu na tela do tabuleiro menor.
+    writeln('Partida encerrada. Retornando ao menu principal...'),
+    sleep(2). 
+
+handle_move(Quadrant, Cell) :- % Caso 3: Jogada normal.
+    Quadrant \== quit, Cell \== quit, % Garante que não é um sinal de saída
+    apply_move(Quadrant, Cell),
+    (   is_game_over ->
+        true % Fim de jogo, para o loop.
+    ;
+        switch_player,
+        game_loop % Continua o jogo.
+    ).
 
 get_move(Quadrant, Cell) :-
     current_player(player(Symbol, Name)),
@@ -39,10 +61,15 @@ get_player_move(Symbol, Name, Quadrant, Cell) :-
     small_board:play_on_small_board(Quadrant, Cell).
 
 prompt_for_quadrant(NextQ, Quadrant) :-
-    write('Digite o quadrante (1–9) ou "salvar" para salvar o jogo: '),
+    write('Digite o quadrante (1–9), "salvar" para salvar ou "sair" para sair: '), 
     read_line_to_string(user_input, Input),
     string_upper(Input, UpperInput),
     handle_quadrant_input(UpperInput, NextQ, Quadrant).
+
+handle_quadrant_input("SAIR", _, _) :-
+    writeln('\nVocê escolheu sair da partida. Retornando ao menu principal...'),
+    sleep(2),
+    throw(user_quit). % Lança um sinal para encerrar o jogo
 
 handle_quadrant_input("SALVAR", NextQ, Quadrant) :-
     save_game,

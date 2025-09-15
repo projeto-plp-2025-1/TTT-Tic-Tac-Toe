@@ -1,3 +1,4 @@
+player("Nicole",0).
 player("Xis",6).
 player("Xis2",0).
 player("Bola2",0).

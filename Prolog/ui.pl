@@ -81,7 +81,7 @@ build_display_cells(Quad, Cell, Board, InDisplay, OutDisplay) :-
     build_display_cells(Quad, NextCell, Board, TempDisplay, OutDisplay).
 
 paint_quadrant(Quad, State, InDisplay, OutDisplay) :-
-    ( State == 'd' -> Symbol = '#' ; Symbol = State ),
+    ( State == 'd' -> Symbol = 'V' ; Symbol = State ),
     paint_quadrant_cells(Quad, 0, Symbol, InDisplay, OutDisplay).
 
 paint_quadrant_cells(_Quad, 9, _, Display, Display) :- !.
@@ -97,7 +97,6 @@ show_scoreboard :-
     format('~w [~w]: ~d\n', [N1, S1, W1]),
     format('~w [~w]: ~d\n', [N2, S2, W2]),
     writeln('----------------------------------').
-
 
 choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     available_characters(Chars),
@@ -143,7 +142,6 @@ choose_player(PlayerNum, ExistingPlayers, player(Symbol, FinalName)) :-
     generate_unique_name(BaseName, UsedNames, FinalName),
     register_player(FinalName), 
     !.
-
 
 get_available_symbols(Chars, UsedSymbols, AvailableSymbols) :-
     findall(Sym, (member(char(Sym, _), Chars), \+ member(Sym, UsedSymbols)), AvailableSymbols).
@@ -229,7 +227,7 @@ show_winner_art(WinnerName) :-
     writeln("  ║       ╚═╝   ╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚══════╝     ╚═════╝ ╚═╝     ╚═╝      ╚═══╝  ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ║   "),
     writeln("  ║                                                                                                                                                     ║   "),
     writeln("  ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝   "),
-    format("                                                🏆 Parabéns, ~w! Você venceu a partida.                                                        ", [WinnerName]),
+    format("                                                   Parabéns, ~w! Você venceu a partida.                                                        ", [WinnerName]),
     nl.
 
 
@@ -245,7 +243,7 @@ show_winner_art(WinnerName) :-
     writeln("  ║       ╚═╝   ╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚══════╝     ╚═════╝ ╚═╝     ╚═╝      ╚═══╝  ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ║   "),
     writeln("  ║                                                                                                                                                     ║   "),
     writeln("  ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝   "),
-    format("                                                🏆 Parabéns, ~w! Você venceu a partida.                                                        ", [WinnerName]),
+    format("                                                   Parabéns, ~w! Você venceu a partida.                                                        ", [WinnerName]),
     nl.
 
 show_loser_art(LoserName) :-
@@ -260,7 +258,7 @@ show_loser_art(LoserName) :-
     writeln("     ║    ╚═╝     ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝     ║"),
     writeln("     ║                                                         ║"),
     writeln("     ╚═════════════════════════════════════════════════════════╝"),
-    format("     🤣 ~w, você perdeu para o bot! HA HA HA!", [LoserName]),
+    format("         ~w, você perdeu para o bot! HA HA HA!", [LoserName]),
     nl.
 
 show_draw_art :-
@@ -275,4 +273,3 @@ show_draw_art :-
     writeln('     ║    ╚═╝  ╚═╝      ╚═══╝  ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝     ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝    ║'),
     writeln('     ║                                                                                                               ║'),
     writeln('     ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝'), nl.
-

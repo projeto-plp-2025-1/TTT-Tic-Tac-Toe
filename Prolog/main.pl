@@ -17,9 +17,9 @@ main :-
     ( Option == "6" -> true ; main).
 
 % Processa a escolha do usuário.
-process_menu_option("1") :- start_new_game(pvp), game_loop.
-process_menu_option("2") :- start_new_game(pve), game_loop.
-process_menu_option("3") :- (load_game -> game_loop ; true).
+process_menu_option("1") :- start_new_game(pvp), catch(game_loop, user_quit, true). 
+process_menu_option("2") :- start_new_game(pve), catch(game_loop, user_quit, true).
+process_menu_option("3") :- ( load_game -> catch(game_loop, user_quit, true) ; true ).
 process_menu_option("4") :- show_rules, press_enter_to_continue.
 process_menu_option("5") :- show_ranking, press_enter_to_continue.
 process_menu_option("6") :- writeln('Saindo do jogo. Até mais!').

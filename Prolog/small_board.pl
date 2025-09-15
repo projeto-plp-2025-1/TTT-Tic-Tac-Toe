@@ -125,7 +125,7 @@ get_small_board_move(Quadrant, FinalCell) :-
       current_player(player(Symbol, _)),
       format('Turno do Jogador(a): [~w] (Tabuleiro Menor)\n\n', [Symbol]),
 
-      write('Digite "salvar" para salvar, "V" para ver o tabuleiro maior, ou pressione ENTER para jogar: '),
+      write('Digite "salvar", "V" (ver tabuleiro maior), "sair", ou pressione ENTER para jogar: '),
       read_line_to_string(user_input, OpInput0),
       string_upper(OpInput0, OpInput),
 
@@ -133,6 +133,8 @@ get_small_board_move(Quadrant, FinalCell) :-
           process_view_option, fail
       ; OpInput == "SALVAR" ->
           save_game, fail
+      ; OpInput == "SAIR" ->      
+          !, FinalCell = quit   
       ; OpInput == "" ->
           write('Linha (A–I): '),
           read_line_to_string(user_input, LinhaInput0),
