@@ -26,7 +26,7 @@ O jogo segue a lógica do Super Jogo da Velha:
 * Modo jogador contra jogador ou jogador contra bot.
 * Escolha de nomes e personalização de símbolos.
 * Interface no terminal com navegação por opções.
-* Temporizador de 1 minuto por jogada.
+* Temporizador de 2 minuto por jogada.
 * Encaminhamento automático: a posição escolhida define o próximo quadrante onde o adversário deve jogar.
 * Escolha livre de quadrante em caso de tabuleiro finalizado.
 * Sistema de salvamento e carregamento de partidas.
